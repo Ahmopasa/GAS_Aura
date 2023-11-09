@@ -1,6 +1,7 @@
 #include "Player/AueaPlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Interaction/EnemyInterface.h"
 
 AAueaPlayerController::AAueaPlayerController()
 {
@@ -9,6 +10,13 @@ AAueaPlayerController::AAueaPlayerController()
 	*	and sending that down to clients. 
 	*/
 	bReplicates = true;
+}
+
+void AAueaPlayerController::PlayerTick(float DeltaTime)
+{
+	Super::PlayerTick(DeltaTime);
+
+	CursorTrace();
 }
 
 void AAueaPlayerController::BeginPlay()
@@ -59,6 +67,67 @@ void AAueaPlayerController::Move(const FInputActionValue& InputActionValue)
 	if (APawn* ControlledPawn = GetPawn<APawn>()) {
 		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
 		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
+	}
+}
+
+void AAueaPlayerController::CursorTrace()
+{
+	FHitResult CursorHit; 
+	GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
+	if (!CursorHit.bBlockingHit) return; 
+
+	LastActor = ThisActor;
+	ThisActor = Cast<IEnemyInterface>(CursorHit.GetActor());
+	/*
+	*	Lince tracing from cursor. There're several scenarios: 
+	*	A. LastActor is null && ThisActor is null 
+	*		- Do nothing
+	* 
+	*	B. LastActor is null && ThisActor is valid
+	*		- Highlight ThisActor
+	* 
+	*	C. LastActor is valid && ThisActor is null
+	*		- UnHighlight LastActor
+	* 
+	*	D. Both actors're valid but LastActor != ThisActor
+	*		- UnHighlight LastActor
+	*		- Highlight ThisActor
+	* 
+	*	E. Both actors're valid and LastActor == ThisActor
+	*		- Do nothing
+	*/
+	if (LastActor == nullptr) {
+		if (ThisActor) {
+			// Case B 
+			ThisActor->HighlightActor();
+
+		}
+		else {
+			// Case A - do nothing 
+		
+		}
+	}
+	else { 
+		// LastActor is valid
+		
+		if (ThisActor == nullptr) {
+			// Case C 
+			LastActor->UnHighlightActor();
+
+		}
+		else {
+			// Both actors are valid. 
+			if (LastActor != ThisActor) {
+				// Case D
+				LastActor->UnHighlightActor();
+				ThisActor->HighlightActor();
+
+			}
+			else {
+				// Case E - do nothing 
+
+			}
+		}
 	}
 }
 
