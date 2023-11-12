@@ -14,6 +14,16 @@ AAueaCharacterBase::AAueaCharacterBase()
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
+UAbilitySystemComponent* AAueaCharacterBase::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
+}
+
+UAttributeSet* AAueaCharacterBase::GetAttributeSet() const
+{
+	return AttributeSet;
+}
+
 
 void AAueaCharacterBase::BeginPlay()
 {
