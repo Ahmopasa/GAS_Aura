@@ -1,7 +1,9 @@
 #include "Character/AueaCharacter.h"
 #include "Player/AueaPlayerState.h"
+#include "Player/AueaPlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AbilitySystemComponent.h"
+#include "UI/HUD/AueaHUD.h"
 
 AAueaCharacter::AAueaCharacter()
 {
@@ -34,5 +36,11 @@ void AAueaCharacter::InitAbilityActorInfo()
 	AueaPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(AueaPlayerState, this);
 	AbilitySystemComponent = AueaPlayerState->GetAbilitySystemComponent();
 	AttributeSet = AueaPlayerState->GetAttributeSet();
+
+	if (AAueaPlayerController* AueaPlayerController = Cast<AAueaPlayerController>(GetController())) {
+		if (AAueaHUD* AueaHUD = Cast<AAueaHUD>(AueaPlayerController->GetHUD())) {
+			AueaHUD->InitOverlay(AueaPlayerController, AueaPlayerState, AbilitySystemComponent, AttributeSet);
+		}
+	}
 }
 

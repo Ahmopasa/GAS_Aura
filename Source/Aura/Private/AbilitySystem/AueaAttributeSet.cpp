@@ -6,10 +6,10 @@
 
 UAueaAttributeSet::UAueaAttributeSet()
 {
-	InitHealth(100.f);
+	InitHealth(50);
 	InitMaxHealth(100.f);
-	InitMana(75.f);
-	InitMaxMana(75.f);
+	InitMana(100.f);
+	InitMaxMana(100.f);
 }
 
 void UAueaAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

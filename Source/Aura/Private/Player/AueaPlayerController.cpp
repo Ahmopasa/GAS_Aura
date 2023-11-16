@@ -33,8 +33,8 @@ void AAueaPlayerController::BeginPlay()
 	*	Set the input mode.
 	*/
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
-	check(Subsystem);
-	Subsystem->AddMappingContext(AueaContext, 0);
+	if (Subsystem)
+		Subsystem->AddMappingContext(AueaContext, 0);
 
 	/*
 	*	Set the cursor settings.

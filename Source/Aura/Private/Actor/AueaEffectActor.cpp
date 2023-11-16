@@ -21,6 +21,7 @@ void AAueaEffectActor::OnOverlap(UPrimitiveComponent* OverlapComponent, AActor* 
 		const UAueaAttributeSet* AueaAttributeSet = Cast<UAueaAttributeSet>(ASCInterface->GetAbilitySystemComponent()->GetAttributeSet(UAueaAttributeSet::StaticClass()));
 		UAueaAttributeSet* MutableAueaAttributeSet = const_cast<UAueaAttributeSet*>(AueaAttributeSet);
 		MutableAueaAttributeSet->SetHealth(AueaAttributeSet->GetHealth() + 25.f);
+		MutableAueaAttributeSet->SetMana(AueaAttributeSet->GetMana() - 25.f);
 		Destroy();
 	}
 }
