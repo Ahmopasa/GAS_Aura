@@ -1,5 +1,6 @@
 #include "UI/WidgetController/OverlayWidgetController.h"
 #include "AbilitySystem/AueaAttributeSet.h"
+#include "AbilitySystem/AueaAbilitySystemComponent.h"
 
 void UOverlayWidgetController::BroadcastInitialValues()
 {
@@ -32,6 +33,17 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AueaAttributeSet->GetMaxManaAttribute()).AddUObject(
 		this,
 		&UOverlayWidgetController::MaxManaChanged
+	);
+
+	Cast<UAueaAbilitySystemComponent>(AbilitySystemComponent)->EffectAssetTags.AddLambda(
+		[](const FGameplayTagContainer& AssetTags) 
+		{
+			for (const auto& Tag : AssetTags)
+			{
+				const FString Msg = FString::Printf(TEXT("GE Tag: %s"), *Tag.ToString());
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, Msg);
+			}
+		}
 	);
 }
 

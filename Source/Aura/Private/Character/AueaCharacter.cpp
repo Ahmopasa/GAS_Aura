@@ -3,6 +3,7 @@
 #include "Player/AueaPlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/AueaAbilitySystemComponent.h"
 #include "UI/HUD/AueaHUD.h"
 
 AAueaCharacter::AAueaCharacter()
@@ -34,6 +35,7 @@ void AAueaCharacter::InitAbilityActorInfo()
 	AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
 	check(AueaPlayerState);
 	AueaPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(AueaPlayerState, this);
+	Cast<UAueaAbilitySystemComponent>(AueaPlayerState->GetAbilitySystemComponent())->AbilityActorInfoSet();
 	AbilitySystemComponent = AueaPlayerState->GetAbilitySystemComponent();
 	AttributeSet = AueaPlayerState->GetAttributeSet();
 

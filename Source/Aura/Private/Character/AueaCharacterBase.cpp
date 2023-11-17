@@ -31,4 +31,9 @@ void AAueaCharacterBase::BeginPlay()
 	
 }
 
+void AAueaCharacterBase::InitAbilityActorInfo()
+{
+
+}
+
 
