@@ -2,6 +2,7 @@
 
 
 #include "Character/AueaCharacterBase.h"
+#include "AbilitySystemComponent.h"
 
 
 AAueaCharacterBase::AAueaCharacterBase()
@@ -34,6 +35,16 @@ void AAueaCharacterBase::BeginPlay()
 void AAueaCharacterBase::InitAbilityActorInfo()
 {
 
+}
+
+void AAueaCharacterBase::InitializePrimaryAttributes() const
+{
+	check(IsValid(GetAbilitySystemComponent()));
+	check(DefaultPrimaryAttributes);
+
+	const auto ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
+	const auto SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(DefaultPrimaryAttributes, 1.f, ContextHandle);
+	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), GetAbilitySystemComponent());
 }
 
 

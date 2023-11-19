@@ -19,6 +19,17 @@ void UAueaAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	/*
+	*	Primary Attributes
+	*/
+	DOREPLIFETIME_CONDITION_NOTIFY(UAueaAttributeSet, Strength, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAueaAttributeSet, Intelligence, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAueaAttributeSet, Resilince, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAueaAttributeSet, Vigor, COND_None, REPNOTIFY_Always);
+
+	/*
+	*	Vital Attributes
+	*/
 	DOREPLIFETIME_CONDITION_NOTIFY(UAueaAttributeSet, Health, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UAueaAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UAueaAttributeSet, Mana, COND_None, REPNOTIFY_Always);
@@ -56,6 +67,26 @@ void UAueaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 	{
 		SetMana(FMath::Clamp(GetMana(), 0.f, GetMaxMana()));
 	}
+}
+
+void UAueaAttributeSet::OnRep_Strength(const FGameplayAttributeData& OldStrength) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAueaAttributeSet, Strength, OldStrength);
+}
+
+void UAueaAttributeSet::OnRep_Intelligence(const FGameplayAttributeData& OldIntelligence) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAueaAttributeSet, Intelligence, OldIntelligence);
+}
+
+void UAueaAttributeSet::OnRep_Resilince(const FGameplayAttributeData& OldResilince) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAueaAttributeSet, Resilince, OldResilince);
+}
+
+void UAueaAttributeSet::OnRep_Vigor(const FGameplayAttributeData& OldVigor) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAueaAttributeSet, Vigor, OldVigor);
 }
 
 void UAueaAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth) const

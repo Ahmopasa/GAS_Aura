@@ -54,6 +54,46 @@ public:
 
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 	
+	/*
+	*	Primary Attributes
+	*/
+	
+	//~begin Strength Attribute
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Strength, Category = "Primary Attributes")
+	FGameplayAttributeData Strength;
+	ATTRIBUTE_ACCESSORS(UAueaAttributeSet, Strength);
+	UFUNCTION()
+	void OnRep_Strength(const FGameplayAttributeData& OldStrength) const;
+	//~end Strength Attributes
+
+	//~begin Intelligence Attribute
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Intelligence, Category = "Primary Attributes")
+	FGameplayAttributeData Intelligence;
+	ATTRIBUTE_ACCESSORS(UAueaAttributeSet, Intelligence);
+	UFUNCTION()
+	void OnRep_Intelligence(const FGameplayAttributeData& OldIntelligence) const;
+	//~end Intelligence Attributes
+
+	//~begin Resilince Attribute
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Resilince, Category = "Primary Attributes")
+	FGameplayAttributeData Resilince;
+	ATTRIBUTE_ACCESSORS(UAueaAttributeSet, Resilince);
+	UFUNCTION()
+	void OnRep_Resilince(const FGameplayAttributeData& OldResilince) const;
+	//~end Resilince Attributes
+
+	//~begin Vigor Attribute
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Vigor, Category = "Primary Attributes")
+	FGameplayAttributeData Vigor;
+	ATTRIBUTE_ACCESSORS(UAueaAttributeSet, Vigor);
+	UFUNCTION()
+	void OnRep_Vigor(const FGameplayAttributeData& OldVigor) const;
+	//~end Vigor Attributes
+
+	/*
+	*	Vital Attributes
+	*/
+
 	//~begin Health Attribute
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Health, Category = "Vital Attributes")
 	FGameplayAttributeData Health;

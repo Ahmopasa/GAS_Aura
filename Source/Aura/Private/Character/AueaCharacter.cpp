@@ -44,5 +44,7 @@ void AAueaCharacter::InitAbilityActorInfo()
 			AueaHUD->InitOverlay(AueaPlayerController, AueaPlayerState, AbilitySystemComponent, AttributeSet);
 		}
 	}
+
+	InitializePrimaryAttributes();
 }
 
