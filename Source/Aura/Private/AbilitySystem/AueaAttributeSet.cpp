@@ -9,8 +9,7 @@
 
 UAueaAttributeSet::UAueaAttributeSet()
 {
-	InitHealth(10.f);
-	InitMana(10.f);
+
 }
 
 void UAueaAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

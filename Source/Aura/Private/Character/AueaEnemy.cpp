@@ -34,6 +34,11 @@ void AAueaEnemy::UnHighlightActor()
 	Weapon->SetRenderCustomDepth(false);
 }
 
+int32 AAueaEnemy::GetPlayerLevel()
+{
+	return Level;
+}
+
 void AAueaEnemy::BeginPlay()
 {
 	Super::BeginPlay();

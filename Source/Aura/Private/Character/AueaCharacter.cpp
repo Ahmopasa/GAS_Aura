@@ -30,6 +30,13 @@ void AAueaCharacter::OnRep_PlayerState()
 	InitAbilityActorInfo(); // Init ability actor info for the Client
 }
 
+int32 AAueaCharacter::GetPlayerLevel()
+{
+	const AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
+	check(AueaPlayerState);
+	return AueaPlayerState->GetPlayerLevel();
+}
+
 void AAueaCharacter::InitAbilityActorInfo()
 {
 	AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
