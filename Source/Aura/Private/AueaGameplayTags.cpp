@@ -35,7 +35,7 @@ void FAueaGameplayTags::InitializeNativeGameplayTags()
 
 	GameplayTags.Attributes_Secondary_Armor = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Attributes.Secondary.Armor"), 
-		FString("Affected by Resilience and increases Block Chance")
+		FString("Affected by Resilience and increases Block Chance.")
 	);
 
 	GameplayTags.Attributes_Secondary_ArmorPenetration = UGameplayTagsManager::Get().AddNativeGameplayTag(
