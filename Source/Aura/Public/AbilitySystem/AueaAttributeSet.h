@@ -41,6 +41,9 @@ struct FEffectProperties
 	ACharacter* TargetCharacter = nullptr;
 };
 
+template<typename T>
+using TStaticFuncPtr = typename TBaseStaticDelegateInstance<T, FDefaultDelegateUserPolicy>::FFuncPtr;
+
 UCLASS()
 class AURA_API UAueaAttributeSet : public UAttributeSet
 {
@@ -54,6 +57,10 @@ public:
 
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 	
+	// TMap<FGameplayTag, TBaseStaticDelegateInstance<FGameplayAttribute(), FDefaultDelegateUserPolicy>::FFuncPtr> TagsToAttributes;
+	// TMap<FGameplayTag, FGameplayAttribute(*)()> TagsToAttributes;
+	TMap<FGameplayTag, TStaticFuncPtr<FGameplayAttribute()>> TagsToAttributes;
+
 	/*
 	*	Primary Attributes
 	*/

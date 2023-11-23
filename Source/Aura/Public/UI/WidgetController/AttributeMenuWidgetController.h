@@ -5,7 +5,9 @@
 #include "AttributeMenuWidgetController.generated.h"
 
 struct FAueaAttributeInfo;
+struct FGameplayAttribute;
 class UAttributeInfo;
+struct FGameplayTag;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAttributeInfoSignature, const FAueaAttributeInfo&, Info);
 
@@ -24,4 +26,7 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAttributeInfo> AttributeInfo;
+
+private:
+	void BroadcastAttributeInfo(const FGameplayTag& AttributeTag, const FGameplayAttribute& Attribute) const;
 };
