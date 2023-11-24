@@ -3,6 +3,7 @@
 
 #include "Character/AueaCharacterBase.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/AueaAbilitySystemComponent.h"
 
 
 AAueaCharacterBase::AAueaCharacterBase()
@@ -53,6 +54,14 @@ void AAueaCharacterBase::InitializeDefaultAttributes() const
 	ApplyEffectToSelf(DefaultPrimaryAttributes, 1.f);
 	ApplyEffectToSelf(DefaultSecondaryAttributes, 1.f);
 	ApplyEffectToSelf(DefaultVitalAttributes, 1.f);
+}
+
+void AAueaCharacterBase::AddCharacterAbilities()
+{
+	UAueaAbilitySystemComponent* AueaASC = CastChecked<UAueaAbilitySystemComponent>(AbilitySystemComponent);
+	if (!HasAuthority()) return;
+
+	AueaASC->AddCharacterAbilities(StartupAbilities);
 }
 
 

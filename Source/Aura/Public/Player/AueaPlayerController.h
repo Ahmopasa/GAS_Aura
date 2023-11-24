@@ -4,12 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "GameplayTagContainer.h"
 #include "AueaPlayerController.generated.h"
 
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 class IEnemyInterface;
+class UAueaInputConfig;
+class UAueaAbilitySystemComponent;
 
 /**
  * 
@@ -36,4 +39,15 @@ private:
 	void CursorTrace();
 	IEnemyInterface* LastActor;
 	IEnemyInterface* ThisActor;
+
+
+	void AbilityInputTagPressed(FGameplayTag InputTag);
+	void AbilityInputTagReleased(FGameplayTag InputTag);
+	void AbilityInputTagHold(FGameplayTag InputTag);
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UAueaInputConfig> InputConfig;
+
+	UPROPERTY()
+	TObjectPtr<UAueaAbilitySystemComponent> AueaAbilitySystemComponent;
+	UAueaAbilitySystemComponent* GetASC();
 };

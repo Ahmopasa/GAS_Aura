@@ -22,6 +22,7 @@ void AAueaCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 	InitAbilityActorInfo(); // Init ability actor info for the Server
+	AddCharacterAbilities();
 }
 
 void AAueaCharacter::OnRep_PlayerState()

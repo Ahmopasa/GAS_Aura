@@ -1,6 +1,8 @@
 #include "Player/AueaPlayerController.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "EnhancedInputSubsystems.h"
-#include "EnhancedInputComponent.h"
+#include "AbilitySystem/AueaAbilitySystemComponent.h"
+#include "Input/AueaInputComponent.h"
 #include "Interaction/EnemyInterface.h"
 
 AAueaPlayerController::AAueaPlayerController()
@@ -51,8 +53,9 @@ void AAueaPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
-	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAueaPlayerController::Move);
+	UAueaInputComponent* AueaInputComponent = CastChecked<UAueaInputComponent>(InputComponent);
+	AueaInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAueaPlayerController::Move);
+	AueaInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHold);
 }
 
 void AAueaPlayerController::Move(const FInputActionValue& InputActionValue)
@@ -129,5 +132,36 @@ void AAueaPlayerController::CursorTrace()
 			}
 		}
 	}
+}
+
+void AAueaPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
+{
+	// GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Red, *InputTag.ToString());
+}
+
+void AAueaPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
+{
+	if (GetASC() == nullptr) return;
+	GetASC()->AbilityInputTagReleased(InputTag);
+
+}
+
+void AAueaPlayerController::AbilityInputTagHold(FGameplayTag InputTag)
+{
+	if (GetASC() == nullptr) return;
+	GetASC()->AbilityInputTagHeld(InputTag);
+
+}
+
+UAueaAbilitySystemComponent* AAueaPlayerController::GetASC()
+{
+	if (AueaAbilitySystemComponent == nullptr)
+	{
+		AueaAbilitySystemComponent = Cast<UAueaAbilitySystemComponent>(
+			UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn<APawn>())
+		);
+	}
+
+	return AueaAbilitySystemComponent;
 }
 
