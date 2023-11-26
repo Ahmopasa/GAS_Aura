@@ -33,6 +33,12 @@ void AAueaCharacterBase::BeginPlay()
 	
 }
 
+FVector AAueaCharacterBase::GetCombatSocketLocation()
+{
+	check(Weapon);
+	return Weapon->GetSocketLocation(WeaponTipSocketName);
+}
+
 void AAueaCharacterBase::InitAbilityActorInfo()
 {
 
