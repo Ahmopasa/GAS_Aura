@@ -6,28 +6,33 @@ void UAueaProjectileSpell::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	const bool bIsServer = HasAuthority(&ActivationInfo);
+
+
+}
+
+void UAueaProjectileSpell::SpawnProjectile()
+{
+	const bool bIsServer = GetAvatarActorFromActorInfo()->HasAuthority();
 	if (!bIsServer) return;
 
 	ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetAvatarActorFromActorInfo());
 	if (CombatInterface)
 	{
 		const FVector SocketLocation = CombatInterface->GetCombatSocketLocation();
-		FTransform SpawnTransform; 
+		FTransform SpawnTransform;
 		SpawnTransform.SetLocation(SocketLocation);
 		//TODO: Set the Projectile Rotation.  
 
 		AAueaProjectile* Projectile = GetWorld()->SpawnActorDeferred<AAueaProjectile>(
-			ProjectileClass, 
-			SpawnTransform, 
+			ProjectileClass,
+			SpawnTransform,
 			GetOwningActorFromActorInfo(),
 			Cast<APawn>(GetOwningActorFromActorInfo()),
 			ESpawnActorCollisionHandlingMethod::AlwaysSpawn
-			);
+		);
 
 		//TODO: Give the Projectile a GameplayEffectSpec for causing Damage.
 
 		Projectile->FinishSpawning(SpawnTransform);
 	}
-
 }
