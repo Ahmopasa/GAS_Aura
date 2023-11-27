@@ -63,6 +63,8 @@ void AAueaPlayerController::SetupInputComponent()
 
 	UAueaInputComponent* AueaInputComponent = CastChecked<UAueaInputComponent>(InputComponent);
 	AueaInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAueaPlayerController::Move);
+	AueaInputComponent->BindAction(ShiftAction, ETriggerEvent::Started, this, &AAueaPlayerController::ShiftPressed);
+	AueaInputComponent->BindAction(ShiftAction, ETriggerEvent::Completed, this, &AAueaPlayerController::ShiftReleased);
 	AueaInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHold);
 }
 
@@ -113,12 +115,10 @@ void AAueaPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 
 		return;
 	}
-
-	if (bTargeting)
-	{
-		if (GetASC()) GetASC()->AbilityInputTagReleased(InputTag);
-	}
-	else
+	
+	if (GetASC()) GetASC()->AbilityInputTagReleased(InputTag);
+	
+	if (!bTargeting && !bShiftKeyDown)
 	{
 		const APawn* ControlledPawn = GetPawn();
 		if (ControlledPawn && FollowTime <= ShortPressThreshold)
@@ -130,7 +130,7 @@ void AAueaPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 				{
 					Spline->AddSplinePoint(PointLocation, ESplineCoordinateSpace::World);
 				}
-				CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1]; 
+				CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];
 				bAutoRunning = true;
 			}
 		}
@@ -148,7 +148,7 @@ void AAueaPlayerController::AbilityInputTagHold(FGameplayTag InputTag)
 		return;
 	}
 
-	if (bTargeting)
+	if (bTargeting || bShiftKeyDown)
 	{
 		if (GetASC()) GetASC()->AbilityInputTagHeld(InputTag);
 	}
