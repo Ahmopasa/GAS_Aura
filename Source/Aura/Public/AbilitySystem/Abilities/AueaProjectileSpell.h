@@ -5,6 +5,7 @@
 #include "AueaProjectileSpell.generated.h"
 
 class AAueaProjectile;
+class UGameplayEffect;
 
 UCLASS()
 class AURA_API UAueaProjectileSpell : public UAueaGameplayAbility
@@ -19,4 +20,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AAueaProjectile> ProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<UGameplayEffect> DamageEffectClass;
 };
