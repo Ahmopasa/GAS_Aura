@@ -5,6 +5,8 @@
 #include "AbilitySystem/AueaAbilitySystemComponent.h"
 #include "AbilitySystem/AueaAttributeSet.h"
 #include "Aura/Aura.h"
+#include "Components/WidgetComponent.h"
+#include "UI/Widget/AueaUserWidget.h"
 
 AAueaEnemy::AAueaEnemy()
 {
@@ -16,6 +18,8 @@ AAueaEnemy::AAueaEnemy()
 
 	AttributeSet = CreateDefaultSubobject<UAueaAttributeSet>("AttributeSet");
 
+	HealthBar = CreateDefaultSubobject<UWidgetComponent>("HealthBar");
+	HealthBar->SetupAttachment(GetRootComponent());
 }
 
 void AAueaEnemy::HighlightActor()
@@ -42,7 +46,27 @@ int32 AAueaEnemy::GetPlayerLevel()
 void AAueaEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	InitAbilityActorInfo();
+
+	if (auto* AueaUserWidget = Cast<UAueaUserWidget>(HealthBar->GetUserWidgetObject()))
+	{
+		AueaUserWidget->SetWidgetController(this);
+	}
+
+	if (const UAueaAttributeSet* AueaAS = Cast<UAueaAttributeSet>(AttributeSet))
+	{
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AueaAS->GetHealthAttribute()).AddLambda(
+			[this](const FOnAttributeChangeData& Data) { OnHealthChanged.Broadcast(Data.NewValue); }
+		);
+
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AueaAS->GetMaxHealthAttribute()).AddLambda(
+			[this](const FOnAttributeChangeData& Data) { OnMaxHealthChanged.Broadcast(Data.NewValue); }
+		);
+
+		OnHealthChanged.Broadcast(AueaAS->GetHealth());
+		OnMaxHealthChanged.Broadcast(AueaAS->GetMaxHealth());
+	}
 }
 
 void AAueaEnemy::InitAbilityActorInfo()
