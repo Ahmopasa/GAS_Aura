@@ -4,6 +4,7 @@
 #include "Character/AueaEnemy.h"
 #include "AbilitySystem/AueaAbilitySystemComponent.h"
 #include "AbilitySystem/AueaAttributeSet.h"
+#include "AbilitySystem/AueaAbilitySystemLibrary.h"
 #include "Aura/Aura.h"
 #include "Components/WidgetComponent.h"
 #include "UI/Widget/AueaUserWidget.h"
@@ -74,4 +75,9 @@ void AAueaEnemy::InitAbilityActorInfo()
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 	Cast<UAueaAbilitySystemComponent>(AbilitySystemComponent)->AbilityActorInfoSet();
 	InitializeDefaultAttributes();
+}
+
+void AAueaEnemy::InitializeDefaultAttributes() const
+{
+	UAueaAbilitySystemLibrary::InitializeDefaultAttributes(this, CharacterClass, Level, AbilitySystemComponent);
 }
