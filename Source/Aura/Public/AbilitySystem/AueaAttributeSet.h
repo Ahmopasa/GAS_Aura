@@ -201,6 +201,16 @@ public:
 	void OnRep_Mana(const FGameplayAttributeData& OldMana) const;
 	//~end Health Attribute
 
+	/*
+	*	Meta Attributes
+	*/
+
+	//~begin Incoming Damage
+	UPROPERTY(BlueprintReadOnly, Category = "Meta Attributes")
+	FGameplayAttributeData IncomingDamage;
+	ATTRIBUTE_ACCESSORS(UAueaAttributeSet, IncomingDamage);
+	//~end Incoming Damage
+
 private:
 	void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const;
 

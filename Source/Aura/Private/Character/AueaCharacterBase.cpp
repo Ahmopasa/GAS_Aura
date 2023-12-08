@@ -30,6 +30,11 @@ UAttributeSet* AAueaCharacterBase::GetAttributeSet() const
 	return AttributeSet;
 }
 
+UAnimMontage* AAueaCharacterBase::GetHitReactMontage_Implementation()
+{
+	return HitReactMontage;
+}
+
 
 void AAueaCharacterBase::BeginPlay()
 {

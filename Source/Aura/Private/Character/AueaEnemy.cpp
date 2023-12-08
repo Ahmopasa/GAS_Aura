@@ -7,7 +7,9 @@
 #include "AbilitySystem/AueaAbilitySystemLibrary.h"
 #include "Aura/Aura.h"
 #include "Components/WidgetComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "UI/Widget/AueaUserWidget.h"
+#include "AueaGameplayTags.h"
 
 AAueaEnemy::AAueaEnemy()
 {
@@ -44,11 +46,21 @@ int32 AAueaEnemy::GetPlayerLevel()
 	return Level;
 }
 
+void AAueaEnemy::HitReactChanged(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	bHitReacting = NewCount > 0;
+	GetCharacterMovement()->MaxWalkSpeed = bHitReacting ? 0.f : BaseWalkSpeed;
+}
+
 void AAueaEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 	
 	InitAbilityActorInfo();
+
+	UAueaAbilitySystemLibrary::GiveStartupAbilities(this, AbilitySystemComponent);
 
 	if (auto* AueaUserWidget = Cast<UAueaUserWidget>(HealthBar->GetUserWidgetObject()))
 	{
@@ -63,6 +75,11 @@ void AAueaEnemy::BeginPlay()
 
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AueaAS->GetMaxHealthAttribute()).AddLambda(
 			[this](const FOnAttributeChangeData& Data) { OnMaxHealthChanged.Broadcast(Data.NewValue); }
+		);
+
+		AbilitySystemComponent->RegisterGameplayTagEvent(FAueaGameplayTags::Get().Effects_HitReact, EGameplayTagEventType::NewOrRemoved).AddUObject(
+			this,
+			&AAueaEnemy::HitReactChanged
 		);
 
 		OnHealthChanged.Broadcast(AueaAS->GetHealth());
