@@ -46,6 +46,12 @@ int32 AAueaEnemy::GetPlayerLevel()
 	return Level;
 }
 
+void AAueaEnemy::Die()
+{
+	SetLifeSpan(LifeSpan);
+	Super::Die();
+}
+
 void AAueaEnemy::HitReactChanged(const FGameplayTag CallbackTag, int32 NewCount)
 {
 	bHitReacting = NewCount > 0;
