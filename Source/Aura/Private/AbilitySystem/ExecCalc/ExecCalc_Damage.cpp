@@ -5,6 +5,9 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/AueaAttributeSet.h"
 #include "AueaGameplayTags.h"
+#include <AbilitySystem/Data/CharacterClassInfo.h>
+#include <AbilitySystem/AueaAbilitySystemLibrary.h>
+#include <Interaction/CombatInterface.h>
 
 struct AueaDamageStatics
 {
@@ -42,8 +45,10 @@ UExecCalc_Damage::Execute_Implementation(
 {
 	const auto* SourceASC = ExecutionParams.GetSourceAbilitySystemComponent();
 	const auto* TargetASC = ExecutionParams.GetTargetAbilitySystemComponent();
-	const auto* SourceAvatar = SourceASC ? SourceASC->GetAvatarActor() : nullptr;
-	const auto* TargetAvatar = TargetASC ? TargetASC->GetAvatarActor() : nullptr;
+	auto* SourceAvatar = SourceASC ? SourceASC->GetAvatarActor() : nullptr;
+	auto* SourceCombatInterface = Cast<ICombatInterface>(SourceAvatar);
+	auto* TargetAvatar = TargetASC ? TargetASC->GetAvatarActor() : nullptr;
+	auto* TargetCombatInterface = Cast<ICombatInterface>(TargetAvatar);
 	const auto& Spec = ExecutionParams.GetOwningSpec();
 	const auto* SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
 	const auto* TargetTags = Spec.CapturedTargetTags.GetAggregatedTags();
@@ -76,8 +81,24 @@ UExecCalc_Damage::Execute_Implementation(
 	float SourceArmorPenetration = 0.f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().ArmorPenetrationDef, EvaluationParameters, SourceArmorPenetration);
 	SourceArmorPenetration = FMath::Max<float>(SourceArmorPenetration, 0.f);
-	const float EffectiveArmor = TargetArmor *= ( 100 - SourceArmorPenetration * 0.25f ) / 100.f;
-	Damage *= (100 - EffectiveArmor * 0.333f) / 100.f;
+
+	const UCharacterClassInfo* CharacterClassInfo = UAueaAbilitySystemLibrary::GetCharacterClassInfo(SourceAvatar);
+	if (CharacterClassInfo)
+	{
+		const auto* ArmorPenetrationCurve = CharacterClassInfo->DamageCalculationCoefficients->FindCurve(FName("ArmorPenetration"), FString());
+		if (SourceCombatInterface)
+		{
+			const auto ArmorPenetrationCoefficient = ArmorPenetrationCurve->Eval(SourceCombatInterface->GetPlayerLevel());
+			const float EffectiveArmor = TargetArmor *= ( 100 - SourceArmorPenetration * ArmorPenetrationCoefficient) / 100.f;
+		
+			const auto* EffectiveArmorCurve = CharacterClassInfo->DamageCalculationCoefficients->FindCurve(FName("EffectiveArmor"), FString());
+			if (TargetCombatInterface)
+			{
+				const float EffectiveArmorCoefficient = EffectiveArmorCurve->Eval(TargetCombatInterface->GetPlayerLevel());
+				Damage *= (100 - EffectiveArmor * EffectiveArmorCoefficient) / 100.f;
+			}
+		}
+	}
 
 	const FGameplayModifierEvaluatedData EvaluatedData(UAueaAttributeSet::GetIncomingDamageAttribute(), EGameplayModOp::Additive, Damage);
 	OutExecutionOutput.AddOutputModifier(EvaluatedData);

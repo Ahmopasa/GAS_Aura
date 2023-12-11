@@ -42,4 +42,6 @@ public:
 	TSubclassOf<UGameplayEffect> VitalAttributes;
 	UPROPERTY(EditDefaultsOnly, Category = "Common Class Defaults")
 	TArray<TSubclassOf<UGameplayAbility>> CommonAbilities;
+	UPROPERTY(EditDefaultsOnly, Category = "Common Class Defaults | Defaults")
+	TObjectPtr<UCurveTable> DamageCalculationCoefficients;
 };
