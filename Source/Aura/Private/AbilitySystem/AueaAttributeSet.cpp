@@ -7,6 +7,7 @@
 #include <Interaction/CombatInterface.h>
 #include <Kismet/GameplayStatics.h>
 #include <Player/AueaPlayerController.h>
+#include <AbilitySystem/AueaAbilitySystemLibrary.h>
 
 UAueaAttributeSet::UAueaAttributeSet()
 {
@@ -126,7 +127,10 @@ void UAueaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 				Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
 			}
 
-			ShowFloatingText(Props, LocalIncomingDamage);
+
+			const bool bBlock = UAueaAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle);
+			const bool bCriticalHit = UAueaAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle);
+			ShowFloatingText(Props, LocalIncomingDamage, bBlock, bCriticalHit);
 		}
 	}
 }
@@ -241,7 +245,7 @@ void UAueaAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData
 	}
 }
 
-void UAueaAttributeSet::ShowFloatingText(const FEffectProperties& Props, float Damage) const
+void UAueaAttributeSet::ShowFloatingText(const FEffectProperties& Props, float Damage, bool bBlockedHit, bool bCriticalHit) const
 {
 	if (Props.SourceCharacter != Props.TargetCharacter)
 	{

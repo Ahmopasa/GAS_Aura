@@ -5,6 +5,7 @@
 #include "Player/AueaPlayerState.h"
 #include "Game/AueaGameModeBase.h"
 #include "AbilitySystemComponent.h"
+#include <AueaAbilityTypes.h>
 
 UOverlayWidgetController* UAueaAbilitySystemLibrary::GetOverlayWidgetController(const UObject* WorldContextObject)
 {
@@ -81,4 +82,40 @@ UCharacterClassInfo* UAueaAbilitySystemLibrary::GetCharacterClassInfo(const UObj
 	AAueaGameModeBase* AueaGameMode = Cast<AAueaGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
 	if (AueaGameMode == nullptr) return nullptr;
 	return AueaGameMode->CharacterClassInfo;
+}
+
+bool UAueaAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const auto* AueaEffectContext = static_cast<const FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		return AueaEffectContext->IsBlockedHit();
+	}
+
+	return false;
+}
+
+bool UAueaAbilitySystemLibrary::IsCriticalHit(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const auto* AueaEffectContext = static_cast<const FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		return AueaEffectContext->IsCriticalHit();
+	}
+
+	return false;
+}
+
+void UAueaAbilitySystemLibrary::SetIsBlockedHit(FGameplayEffectContextHandle& EffectContextHandle, bool bInIsBlockedHit)
+{
+	if (auto* AueaEffectContext = static_cast<FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		AueaEffectContext->SetIsBlockedHit(bInIsBlockedHit);
+	}
+}
+
+void UAueaAbilitySystemLibrary::SetIsCriticalHit(FGameplayEffectContextHandle& EffectContextHandle, bool bInIsCriticalHit)
+{
+	if (auto* AueaEffectContext = static_cast<FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		AueaEffectContext->SetIsCriticalHit(bInIsCriticalHit);
+	}
 }
