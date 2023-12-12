@@ -16,9 +16,6 @@ class UAueaAbilitySystemComponent;
 class USplineComponent;
 class UDamageTextComponent;
 
-/**
- * 
- */
 UCLASS()
 class AURA_API AAueaPlayerController : public APlayerController
 {
@@ -28,7 +25,7 @@ public:
 	AAueaPlayerController();
 	virtual void PlayerTick(float DeltaTime) override;
 	UFUNCTION(Client, Reliable)
-	void ShowDamageNumber(float DamageAmount, ACharacter* TargetCharacter);
+	void ShowDamageNumber(float DamageAmount, ACharacter* TargetCharacter, bool bBlockedHit, bool bCriticalHit);
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;

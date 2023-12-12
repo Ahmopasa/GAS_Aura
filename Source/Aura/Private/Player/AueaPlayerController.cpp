@@ -31,15 +31,22 @@ void AAueaPlayerController::PlayerTick(float DeltaTime)
 	AutoRun();
 }
 
-void AAueaPlayerController::ShowDamageNumber_Implementation(float DamageAmount, ACharacter* TargetCharacter)
+void AAueaPlayerController::ShowDamageNumber_Implementation(float DamageAmount, ACharacter* TargetCharacter, bool bBlockedHit, bool bCriticalHit)
 {
 	if (IsValid(TargetCharacter) && DamageTextComponentClass)
 	{
+		GEngine->AddOnScreenDebugMessage(
+			1,
+			15.0f,
+			FColor::Yellow,
+			FString::Printf(TEXT("ShowDamageNumber_Implementation_Damage: %f"), DamageAmount)
+		);
+
 		auto* DamageText = NewObject<UDamageTextComponent>(TargetCharacter, DamageTextComponentClass);
 		DamageText->RegisterComponent();
 		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-		DamageText->SetDamageText(DamageAmount);
+		DamageText->SetDamageText(DamageAmount, bBlockedHit, bCriticalHit);
 	}
 }
 
