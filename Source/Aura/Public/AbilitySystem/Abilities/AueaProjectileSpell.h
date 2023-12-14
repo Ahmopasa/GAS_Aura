@@ -1,14 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Abilities/AueaGameplayAbility.h"
+#include "AbilitySystem/Abilities/AueaDamageGameplayAbility.h"
 #include "AueaProjectileSpell.generated.h"
 
 class AAueaProjectile;
 class UGameplayEffect;
 
 UCLASS()
-class AURA_API UAueaProjectileSpell : public UAueaGameplayAbility
+class AURA_API UAueaProjectileSpell : public UAueaDamageGameplayAbility
 {
 	GENERATED_BODY()
 	
@@ -21,6 +21,5 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AAueaProjectile> ProjectileClass;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<UGameplayEffect> DamageEffectClass;
+
 };
