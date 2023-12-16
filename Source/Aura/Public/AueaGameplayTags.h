@@ -39,6 +39,15 @@ public:
 	FGameplayTag Attributes_Secondary_ManaRegeneration;
 
 	/*
+	*	Secondary Attributes | Resistance Attributes
+	*/
+
+	FGameplayTag Attributes_Secondary_Resistance_Fire;
+	FGameplayTag Attributes_Secondary_Resistance_Lighting;
+	FGameplayTag Attributes_Secondary_Resistance_Arcane;
+	FGameplayTag Attributes_Secondary_Resistance_Physical;
+
+	/*
 	*	Input Tags
 	*/
 
@@ -55,10 +64,13 @@ public:
 
 	FGameplayTag Damage;
 	FGameplayTag Damage_Fire;
-	TArray<FGameplayTag> DamageTypes;
+	FGameplayTag Damage_Lighting;
+	FGameplayTag Damage_Arcane;
+	FGameplayTag Damage_Physical;
+	TMap<FGameplayTag, FGameplayTag> DamageTypesToResistances;
 
 	/*
-	*	Others
+	*	Effects
 	*/
 
 	FGameplayTag Effects_HitReact;
