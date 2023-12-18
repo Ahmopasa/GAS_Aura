@@ -10,6 +10,8 @@
 #include "AueaEnemy.generated.h"
 
 class UWidgetComponent;
+class UBehaviorTree;
+class AAueaAIController;
 
 UCLASS()
 class AURA_API AAueaEnemy : public AAueaCharacterBase, public IEnemyInterface
@@ -18,6 +20,8 @@ class AURA_API AAueaEnemy : public AAueaCharacterBase, public IEnemyInterface
 
 public:
 	AAueaEnemy();
+
+	virtual void PossessedBy(AController* NewController) override;
 
 	//~begin Enemy Interface
 	virtual void HighlightActor() override;
@@ -43,6 +47,7 @@ public:
 	float BaseWalkSpeed = 250.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	float LifeSpan = 5.f;
+
 protected:
 	virtual void BeginPlay()override;
 
@@ -59,4 +64,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UWidgetComponent> HealthBar;
 
+	UPROPERTY(EditAnywhere, Category = "AI")
+	TObjectPtr<UBehaviorTree> BehaviorTree;
+
+	UPROPERTY()
+	TObjectPtr<AAueaAIController> AueaAIController;
 };
