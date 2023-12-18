@@ -66,7 +66,7 @@ void AAueaEnemy::BeginPlay()
 	
 	InitAbilityActorInfo();
 
-	UAueaAbilitySystemLibrary::GiveStartupAbilities(this, AbilitySystemComponent);
+	if (HasAuthority()) UAueaAbilitySystemLibrary::GiveStartupAbilities(this, AbilitySystemComponent);
 
 	if (auto* AueaUserWidget = Cast<UAueaUserWidget>(HealthBar->GetUserWidgetObject()))
 	{
@@ -97,7 +97,7 @@ void AAueaEnemy::InitAbilityActorInfo()
 {
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 	Cast<UAueaAbilitySystemComponent>(AbilitySystemComponent)->AbilityActorInfoSet();
-	InitializeDefaultAttributes();
+	if (HasAuthority()) InitializeDefaultAttributes();
 }
 
 void AAueaEnemy::InitializeDefaultAttributes() const

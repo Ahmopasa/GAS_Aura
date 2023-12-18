@@ -285,9 +285,9 @@ void UAueaAttributeSet::ShowFloatingText(const FEffectProperties& Props, float D
 {
 	if (Props.SourceCharacter != Props.TargetCharacter)
 	{
-		if (auto* PC = Cast<AAueaPlayerController>(UGameplayStatics::GetPlayerController(Props.SourceCharacter, 0)))
+		if (auto* PC = Cast<AAueaPlayerController>(Props.SourceCharacter->Controller))
 		{
-			GEngine->AddOnScreenDebugMessage(
+ 			GEngine->AddOnScreenDebugMessage(
 				2,
 				15.0f,
 				FColor::Orange,
