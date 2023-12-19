@@ -42,6 +42,9 @@ void AAueaEnemy::PossessedBy(AController* NewController)
 
 	AueaAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
 	AueaAIController->RunBehaviorTree(BehaviorTree);
+	AueaAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), false);
+	AueaAIController->GetBlackboardComponent()->SetValueAsBool(FName("RangedAttacker"), CharacterClass != ECharacterClass::Warrior);
+
 }
 
 void AAueaEnemy::HighlightActor()
@@ -75,6 +78,7 @@ void AAueaEnemy::HitReactChanged(const FGameplayTag CallbackTag, int32 NewCount)
 {
 	bHitReacting = NewCount > 0;
 	GetCharacterMovement()->MaxWalkSpeed = bHitReacting ? 0.f : BaseWalkSpeed;
+	AueaAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), bHitReacting);
 }
 
 void AAueaEnemy::BeginPlay()
