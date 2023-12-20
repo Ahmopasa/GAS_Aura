@@ -6,6 +6,7 @@
 #include "Game/AueaGameModeBase.h"
 #include "AbilitySystemComponent.h"
 #include <AueaAbilityTypes.h>
+#include <Interaction/CombatInterface.h>
 
 UOverlayWidgetController* UAueaAbilitySystemLibrary::GetOverlayWidgetController(const UObject* WorldContextObject)
 {
@@ -65,7 +66,7 @@ void UAueaAbilitySystemLibrary::InitializeDefaultAttributes(const UObject* World
 	}
 }
 
-void UAueaAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContextObject, UAbilitySystemComponent* ASC)
+void UAueaAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContextObject, UAbilitySystemComponent* ASC, ECharacterClass CharacterClass)
 {
 	if (UCharacterClassInfo* CharacterClassInfo = GetCharacterClassInfo(WorldContextObject))
 	{
@@ -73,6 +74,16 @@ void UAueaAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContext
 		{
 			FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
 			ASC->GiveAbility(AbilitySpec);
+		}
+
+		const auto& DefaultInfo = CharacterClassInfo->GetClassDefaultInfo(CharacterClass);
+		for (auto AbilityClass : DefaultInfo.StartupAbilities)
+		{
+			if (auto CombatInterface = Cast<ICombatInterface>(ASC->GetAvatarActor()))
+			{
+				FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, CombatInterface->GetPlayerLevel());				
+				ASC->GiveAbility(AbilitySpec);  
+			}
 		}
 	}
 }

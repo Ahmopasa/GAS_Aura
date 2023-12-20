@@ -74,6 +74,16 @@ void AAueaEnemy::Die()
 	Super::Die();
 }
 
+void AAueaEnemy::SetCombatTarget_Implementation(AActor* InCombatTarget)
+{
+	CombatTarget = InCombatTarget;
+}
+
+AActor* AAueaEnemy::GetCombatTarget_Implementation() const
+{
+	return CombatTarget;
+}
+
 void AAueaEnemy::HitReactChanged(const FGameplayTag CallbackTag, int32 NewCount)
 {
 	bHitReacting = NewCount > 0;
@@ -89,7 +99,7 @@ void AAueaEnemy::BeginPlay()
 	
 	InitAbilityActorInfo();
 
-	if (HasAuthority()) UAueaAbilitySystemLibrary::GiveStartupAbilities(this, AbilitySystemComponent);
+	if (HasAuthority()) UAueaAbilitySystemLibrary::GiveStartupAbilities(this, AbilitySystemComponent, CharacterClass);
 
 	if (auto* AueaUserWidget = Cast<UAueaUserWidget>(HealthBar->GetUserWidgetObject()))
 	{
