@@ -57,6 +57,8 @@ void AAueaCharacterBase::MulticastHandleDeath_Implementation()
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	Dissolve();
+
+	bDead = true;
 }
 
 void AAueaCharacterBase::BeginPlay()
@@ -65,10 +67,20 @@ void AAueaCharacterBase::BeginPlay()
 	
 }
 
-FVector AAueaCharacterBase::GetCombatSocketLocation()
+FVector AAueaCharacterBase::GetCombatSocketLocation_Implementation()
 {
 	check(Weapon);
 	return Weapon->GetSocketLocation(WeaponTipSocketName);
+}
+
+bool AAueaCharacterBase::IsDead_Implementation() const
+{
+	return bDead;
+}
+
+AActor* AAueaCharacterBase::GetAvatar_Implementation() 
+{
+	return this;
 }
 
 void AAueaCharacterBase::InitAbilityActorInfo()
