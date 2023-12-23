@@ -287,13 +287,12 @@ void UAueaAttributeSet::ShowFloatingText(const FEffectProperties& Props, float D
 	{
 		if (auto* PC = Cast<AAueaPlayerController>(Props.SourceCharacter->Controller))
 		{
- 			GEngine->AddOnScreenDebugMessage(
-				2,
-				15.0f,
-				FColor::Orange,
-				FString::Printf(TEXT("ShowFloatingText_Damage: %f"), Damage)
-			);
+ 			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bBlockedHit, bCriticalHit);
+			return;
+		}
 
+		if (auto* PC = Cast<AAueaPlayerController>(Props.TargetCharacter->Controller))
+		{
 			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bBlockedHit, bCriticalHit);
 		}
 	}

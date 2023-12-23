@@ -3,6 +3,7 @@
 #include "AbilitySystem/AueaAbilitySystemComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Aura/Aura.h"
+#include "AueaGameplayTags.h"
 
 AAueaCharacterBase::AAueaCharacterBase()
 {
@@ -67,10 +68,26 @@ void AAueaCharacterBase::BeginPlay()
 	
 }
 
-FVector AAueaCharacterBase::GetCombatSocketLocation_Implementation()
+FVector AAueaCharacterBase::GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag)
 {
-	check(Weapon);
-	return Weapon->GetSocketLocation(WeaponTipSocketName);
+	const auto& GameplayTags = FAueaGameplayTags::Get();
+
+	if (MontageTag.MatchesTagExact(GameplayTags.Montage_Attack_Weapon) && IsValid(Weapon))
+	{
+		return Weapon->GetSocketLocation(WeaponTipSocketName);
+	}
+	
+	if (MontageTag.MatchesTagExact(GameplayTags.Montage_Attack_RightHand))
+	{
+		return GetMesh()->GetSocketLocation(RightHandSocketName);
+	}
+
+	if (MontageTag.MatchesTagExact(GameplayTags.Montage_Attack_LeftHand))
+	{
+		return GetMesh()->GetSocketLocation(LeftHandSocketName);
+	}
+
+	return FVector();
 }
 
 bool AAueaCharacterBase::IsDead_Implementation() const
@@ -81,6 +98,11 @@ bool AAueaCharacterBase::IsDead_Implementation() const
 AActor* AAueaCharacterBase::GetAvatar_Implementation() 
 {
 	return this;
+}
+
+TArray<FTaggedMontage> AAueaCharacterBase::GetAttackMontages_Implementation()
+{
+	return AttackMontages;
 }
 
 void AAueaCharacterBase::InitAbilityActorInfo()
