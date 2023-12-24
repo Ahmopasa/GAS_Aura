@@ -144,6 +144,21 @@ void UAueaAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldC
 	}
 }
 
+bool UAueaAbilitySystemLibrary::IsNotFriend(AActor* First, AActor* Second)
+{
+	const bool bIsFirstAPlayer = First->ActorHasTag(FName("Player"));
+	const bool bIsSecondAPlayer = Second->ActorHasTag(FName("Player"));
+	const bool bIsFirstAnEnemy = First->ActorHasTag(FName("Enemy"));
+	const bool bIsSecondAnEnemy = Second->ActorHasTag(FName("Enemy"));
+
+	const bool bBothArePlayers = bIsFirstAPlayer && bIsSecondAPlayer;
+	const bool bBothAreEnemies = bIsFirstAnEnemy && bIsSecondAnEnemy;
+
+	const bool bFriends = bBothArePlayers || bBothAreEnemies;
+
+	return !bFriends;
+}
+
 void UAueaAbilitySystemLibrary::SetIsBlockedHit(FGameplayEffectContextHandle& EffectContextHandle, bool bInIsBlockedHit)
 {
 	if (auto* AueaEffectContext = static_cast<FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
