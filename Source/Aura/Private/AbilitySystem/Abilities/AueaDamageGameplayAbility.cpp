@@ -16,3 +16,14 @@ void UAueaDamageGameplayAbility::CauseDamage(AActor* TargetActor)
 	);
 	
 }
+
+FTaggedMontage UAueaDamageGameplayAbility::GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages)
+{
+	if (const auto Size = TaggedMontages.Num(); Size > 0)
+	{
+		const int32 Selection = FMath::RandRange(0, Size - 1);
+		return TaggedMontages[Selection];
+	}
+
+	return FTaggedMontage();
+}

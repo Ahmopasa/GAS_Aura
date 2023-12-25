@@ -1,14 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/AueaGameplayAbility.h"
+#include "Interaction/CombatInterface.h"
 #include "AueaDamageGameplayAbility.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class AURA_API UAueaDamageGameplayAbility : public UAueaGameplayAbility
 {
@@ -22,4 +19,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TMap<FGameplayTag, FScalableFloat> DamageTypes;
+
+	UFUNCTION(BlueprintPure)
+	FTaggedMontage GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages);
 };

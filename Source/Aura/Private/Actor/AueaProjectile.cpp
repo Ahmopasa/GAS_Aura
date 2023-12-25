@@ -6,6 +6,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Aura/Aura.h"
 #include "AbilitySystemComponent.h"
+#include <AbilitySystem/AueaAbilitySystemLibrary.h>
 
 AAueaProjectile::AAueaProjectile()
 {
@@ -58,6 +59,8 @@ void AAueaProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 {
 	if (DamageEffectSpecHandle.Data.IsValid() && DamageEffectSpecHandle.Data.Get()->GetContext().GetEffectCauser() == OtherActor) return;
 	
+	if (!UAueaAbilitySystemLibrary::IsNotFriend(DamageEffectSpecHandle.Data.Get()->GetContext().GetEffectCauser(), OtherActor)) return;
+
 	if (!bHit)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation(), FRotator::ZeroRotator);
