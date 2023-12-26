@@ -1,8 +1,9 @@
 #include "AbilitySystem/Abilities/AueaProjectileSpell.h"
-#include "Actor/AueaProjectile.h"
-#include "Interaction/CombatInterface.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "Actor/AueaProjectile.h"
+#include "Interaction/CombatInterface.h"
+
 #include "Aura/Public/AueaGameplayTags.h"
 
 void UAueaProjectileSpell::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
@@ -63,6 +64,7 @@ void UAueaProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 		GetAvatarActorFromActorInfo(),
 		FAueaGameplayTags::Get().Montage_Attack_Weapon
 	);
+
 	FRotator Rotation = (ProjectileTargetLocation - SocketLocation).Rotation();
 
 	FTransform SpawnTransform;
@@ -86,7 +88,9 @@ void UAueaProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 	FHitResult HitResult;
 	HitResult.Location = ProjectileTargetLocation;
 	EffectContextHandle.AddHitResult(HitResult);
+
 	const FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, GetAbilityLevel(), EffectContextHandle);
+	
 	const FAueaGameplayTags GameplayTags = FAueaGameplayTags::Get();
 
 	for (auto& Pair : DamageTypes)
@@ -98,5 +102,6 @@ void UAueaProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 	}
 
 	Projectile->DamageEffectSpecHandle = SpecHandle;
+
 	Projectile->FinishSpawning(SpawnTransform);
 }

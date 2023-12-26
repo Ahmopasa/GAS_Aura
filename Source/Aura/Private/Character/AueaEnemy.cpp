@@ -71,6 +71,9 @@ int32 AAueaEnemy::GetPlayerLevel()
 void AAueaEnemy::Die()
 {
 	SetLifeSpan(LifeSpan);
+
+	if (AueaAIController) AueaAIController->GetBlackboardComponent()->SetValueAsBool(FName("Dead"), true);
+
 	Super::Die();
 }
 
