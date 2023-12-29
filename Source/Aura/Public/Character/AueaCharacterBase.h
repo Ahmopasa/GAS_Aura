@@ -93,8 +93,11 @@ protected:
 	void Dissolve();
 	//~end Dissolve Effects
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	class UNiagaraSystem* BloodEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	USoundBase* DeathSound; 
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Abilities")

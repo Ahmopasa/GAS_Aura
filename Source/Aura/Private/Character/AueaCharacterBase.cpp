@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Aura/Aura.h"
 #include "AueaGameplayTags.h"
+#include <Kismet/GameplayStatics.h>
 
 AAueaCharacterBase::AAueaCharacterBase()
 {
@@ -46,6 +47,8 @@ void AAueaCharacterBase::Die()
 
 void AAueaCharacterBase::MulticastHandleDeath_Implementation()
 {
+	UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation(), GetActorRotation());
+
 	Weapon->SetSimulatePhysics(true);
 	Weapon->SetEnableGravity(true);
 	Weapon->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
