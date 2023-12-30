@@ -127,6 +127,16 @@ FTaggedMontage AAueaCharacterBase::GetTaggedMontageByTag_Implementation(const FG
 	return FTaggedMontage();
 }
 
+int32 AAueaCharacterBase::GetMinionCount_Implementation()
+{
+	return MinionCount; 
+}
+
+void AAueaCharacterBase::IncrementMinionCount_Implementation(int32 Amount)
+{
+	MinionCount += Amount; 
+}
+
 void AAueaCharacterBase::InitAbilityActorInfo()
 {
 
