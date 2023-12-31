@@ -1,6 +1,26 @@
 #include "AbilitySystem/AueaAbilitySystemComponent.h"
 #include "AueaGameplayTags.h"
 #include "AbilitySystem/Abilities/AueaGameplayAbility.h"
+#include "AueaLogChannel.h"
+
+FGameplayTag UAueaAbilitySystemComponent::GetAbilityTagFromSpec(const FGameplayAbilitySpec& AbilitySpec)
+{
+	if (AbilitySpec.Ability)
+		for (auto Tag : AbilitySpec.Ability.Get()->AbilityTags)
+			if (Tag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("Abilities"))))
+				return Tag;
+
+	return FGameplayTag();
+}
+
+FGameplayTag UAueaAbilitySystemComponent::GetInputTagFromSpec(const FGameplayAbilitySpec& AbilitySpec)
+{
+	for (auto Tag : AbilitySpec.DynamicAbilityTags)
+		if (Tag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("InputTag"))))
+			return Tag;
+
+	return FGameplayTag();
+}
 
 void UAueaAbilitySystemComponent::AbilityActorInfoSet()
 {
@@ -20,6 +40,10 @@ void UAueaAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf
 			GiveAbility(AbilitySpec);
 		}
 	}
+
+	bStartupAbilitiesGiven = true;
+
+	AbilitiesGivenDelegate.Broadcast(this);
 }
 
 void UAueaAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InputTag)
@@ -50,6 +74,26 @@ void UAueaAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& In
 		{
 			AbilitySpecInputReleased(AbilitySpec);
 		}
+	}
+}
+
+void UAueaAbilitySystemComponent::ForEachAbility(const FForEachAbility& Delegate)
+{
+	FScopedAbilityListLock ActiveScopeLock(*this);
+
+	for (const auto& AbilitySpec : GetActivatableAbilities())
+		if (!Delegate.ExecuteIfBound(AbilitySpec))
+			UE_LOG(LogAuea, Error, TEXT("Failed to execute delegate in %hs."), __FUNCTION__);
+}
+
+void UAueaAbilitySystemComponent::OnRep_ActivateAbilities()
+{
+	Super::OnRep_ActivateAbilities();
+
+	if (!bStartupAbilitiesGiven) 
+	{
+		bStartupAbilitiesGiven = true;
+		AbilitiesGivenDelegate.Broadcast(this);
 	}
 }
 

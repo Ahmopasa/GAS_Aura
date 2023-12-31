@@ -194,6 +194,15 @@ void FAueaGameplayTags::InitializeNativeGameplayTags()
 	);
 
 	/*
+	*	Abilities | Fire
+	*/
+
+	GameplayTags.Abilities_Fire_Firebolt = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Fire.Firebolt"),
+		FString("Firebolt Ability Tag")
+	);
+
+	/*
 	*	Combat Socket
 	*/
 

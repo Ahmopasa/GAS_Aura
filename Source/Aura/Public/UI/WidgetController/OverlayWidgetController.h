@@ -5,8 +5,11 @@
 #include "GameplayTagContainer.h"
 #include "OverlayWidgetController.generated.h"
 
+
 struct FOnAttributeChangeData;
 class UAueaUserWidget;
+class UAbilityInfo;
+class UAueaAbilitySystemComponent;
 
 USTRUCT(BlueprintType)
 struct FUIWidgetRow : public FTableRowBase
@@ -28,6 +31,7 @@ struct FUIWidgetRow : public FTableRowBase
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMessageWidgetRowSignature, FUIWidgetRow, Row);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityInfoSignature, const FAueaAbilityInfo&, Info);
 
 
 UCLASS(BlueprintType, Blueprintable)
@@ -54,13 +58,21 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
 	FMessageWidgetRowSignature MessageWidgetRowDelegate;
 
+	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
+	FAbilityInfoSignature AbilityInfoDelegate;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget Data")
 	TObjectPtr<UDataTable> MessageWidgetDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget Data")
+	TObjectPtr<UAbilityInfo> AbilityInfo; 
 
 	template<typename T>
 	T* GetDataTableRowByTag(UDataTable* DataTable, const FGameplayTag& Tag)
 	{
 		return DataTable->FindRow<T>(Tag.GetTagName(), TEXT(""));
 	}
+
+	void OnInitializeStartupAbilities(UAueaAbilitySystemComponent* AueaAbilitySystemComponent);
 };

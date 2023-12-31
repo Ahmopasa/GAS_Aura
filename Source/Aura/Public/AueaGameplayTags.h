@@ -77,6 +77,12 @@ public:
 	FGameplayTag Abilities_Summon;
 
 	/*
+	*	Abilities | Fire 
+	*/
+
+	FGameplayTag Abilities_Fire_Firebolt;
+
+	/*
 	*	Combat Socket
 	*/
 
