@@ -48,6 +48,12 @@ public:
 	FGameplayTag Attributes_Secondary_Resistance_Physical;
 
 	/*
+	*	Meta Attributes | Incoming XP
+	*/
+
+	FGameplayTag Attributes_Meta_IncomingXP;
+
+	/*
 	*	Input Tags
 	*/
 

@@ -137,6 +137,11 @@ void AAueaCharacterBase::IncrementMinionCount_Implementation(int32 Amount)
 	MinionCount += Amount; 
 }
 
+ECharacterClass AAueaCharacterBase::GetCharacterClass_Implementation()
+{
+	return CharacterClass;
+}
+
 void AAueaCharacterBase::InitAbilityActorInfo()
 {
 
@@ -166,6 +171,8 @@ void AAueaCharacterBase::AddCharacterAbilities()
 	if (!HasAuthority()) return;
 
 	AueaASC->AddCharacterAbilities(StartupAbilities);
+
+	AueaASC->AddCharacterPassiveAbilities(StartupPassiveAbilities);
 }
 
 void AAueaCharacterBase::Dissolve()

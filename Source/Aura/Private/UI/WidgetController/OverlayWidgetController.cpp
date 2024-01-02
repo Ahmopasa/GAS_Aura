@@ -2,6 +2,8 @@
 #include "AbilitySystem/AueaAttributeSet.h"
 #include "AbilitySystem/AueaAbilitySystemComponent.h"
 #include "AbilitySystem/Data/AbilityInfo.h"
+#include "Player/AueaPlayerState.h"
+#include "AbilitySystem/Data/LevelUpInfo.h"
 
 void UOverlayWidgetController::BroadcastInitialValues()
 {
@@ -15,7 +17,10 @@ void UOverlayWidgetController::BroadcastInitialValues()
 
 void UOverlayWidgetController::BindCallbacksToDependencies()
 {
-	const UAueaAttributeSet* AueaAttributeSet = CastChecked<UAueaAttributeSet>(AttributeSet);
+	auto* AueaPlayerState = CastChecked<AAueaPlayerState>(PlayerState);
+	AueaPlayerState->OnXPChangedDelegate.AddUObject(this, &UOverlayWidgetController::OnXPChanged);
+
+	const auto* AueaAttributeSet = CastChecked<UAueaAttributeSet>(AttributeSet);
 
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AueaAttributeSet->GetHealthAttribute()).AddLambda(
 		[this](const FOnAttributeChangeData& Data) { OnHealthChanged.Broadcast(Data.NewValue); }
@@ -74,4 +79,24 @@ void UOverlayWidgetController::OnInitializeStartupAbilities(UAueaAbilitySystemCo
 	);
 
 	AueaAbilitySystemComponent->ForEachAbility(BroadcastDelegate);
+}
+
+void UOverlayWidgetController::OnXPChanged(int32 NewXP) const
+{
+	const auto* AueaPlayerState = CastChecked<AAueaPlayerState>(PlayerState);
+	const ULevelUpInfo* LevelUpInfo = AueaPlayerState->LevelUpInfo;
+	checkf(LevelUpInfo, TEXT("Unable to find LevelUpInfo. Please, fill out AueaPlayerState blueprint."));
+	
+	const auto Level = LevelUpInfo->FindLevelForXP(NewXP);
+	const auto MaxLevel = LevelUpInfo->LevelUpInformation.Num();
+	if (Level <= MaxLevel && Level > 0)
+	{
+		const auto LevelUpRequiretment = LevelUpInfo->LevelUpInformation[Level].LevelUpRequiretment;
+		const auto PreviousLevelUpRequiretment = LevelUpInfo->LevelUpInformation[Level - 1].LevelUpRequiretment;
+		const auto DeltaLevelRequiretment = LevelUpRequiretment - PreviousLevelUpRequiretment;
+		const auto XPForThisLevel = NewXP - PreviousLevelUpRequiretment;
+		const auto XPBarPercent = static_cast<float>(XPForThisLevel) / DeltaLevelRequiretment;
+		OnXPPercentChangedDelegate.Broadcast(XPBarPercent);
+	}
+
 }

@@ -46,6 +46,15 @@ void UAueaAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf
 	AbilitiesGivenDelegate.Broadcast(this);
 }
 
+void UAueaAbilitySystemComponent::AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities)
+{
+	for (auto AbilityClass : StartupPassiveAbilities)
+	{
+		auto AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
+		GiveAbilityAndActivateOnce(AbilitySpec);
+	}
+}
+
 void UAueaAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InputTag)
 {
 	if (!InputTag.IsValid()) return;

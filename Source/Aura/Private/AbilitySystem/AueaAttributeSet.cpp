@@ -5,6 +5,7 @@
 #include "Net/UnrealNetwork.h"
 #include "AueaGameplayTags.h"
 #include <Interaction/CombatInterface.h>
+#include "Interaction/PlayerInterface.h"
 #include <Kismet/GameplayStatics.h>
 #include <Player/AueaPlayerController.h>
 #include <AbilitySystem/AueaAbilitySystemLibrary.h>
@@ -110,8 +111,6 @@ void UAueaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{
 		SetHealth(FMath::Clamp(GetHealth(), 0.f, GetMaxHealth()));
-
-		UE_LOG(LogTemp, Warning, TEXT("Changed Health on %s, Health: %f"), *Props.TargetAvatarActor->GetName(), GetHealth());
 	}
 
 	if (Data.EvaluatedData.Attribute == GetManaAttribute())
@@ -135,6 +134,8 @@ void UAueaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 				{
 					CombatInterface->Die();
 				}
+
+				SendXPEvent(Props);
 			}
 			else
 			{
@@ -143,11 +144,19 @@ void UAueaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 				Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
 			}
 
-
 			const bool bBlock = UAueaAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle);
 			const bool bCriticalHit = UAueaAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle);
 			ShowFloatingText(Props, LocalIncomingDamage, bBlock, bCriticalHit);
 		}
+	}
+
+	if (Data.EvaluatedData.Attribute == GetIncomingXPAttribute())
+	{
+		const auto LocalIncomingXP = GetIncomingXP();
+		SetIncomingXP(0.f);
+
+		if (Props.SourceCharacter->Implements<UPlayerInterface>())
+		IPlayerInterface::Execute_AddToXP(Props.SourceCharacter, LocalIncomingXP);
 	}
 }
 
@@ -295,5 +304,18 @@ void UAueaAttributeSet::ShowFloatingText(const FEffectProperties& Props, float D
 		{
 			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bBlockedHit, bCriticalHit);
 		}
+	}
+}
+
+void UAueaAttributeSet::SendXPEvent(const FEffectProperties& Props)
+{
+	if (auto* CombatInterface = Cast<ICombatInterface>(Props.TargetCharacter))
+	{
+		const auto TargetLevel = CombatInterface->GetPlayerLevel();
+		const auto TargetClass = ICombatInterface::Execute_GetCharacterClass(Props.TargetCharacter);
+		const auto XPReward = UAueaAbilitySystemLibrary::GetXPRewardForClassAndLevel(Props.TargetCharacter, TargetClass, TargetLevel);
+		const auto& GameplayTags = FAueaGameplayTags::Get();
+		FGameplayEventData PayLoad; PayLoad.EventTag = GameplayTags.Attributes_Meta_IncomingXP; PayLoad.EventMagnitude = XPReward;
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Props.SourceCharacter, GameplayTags.Attributes_Meta_IncomingXP, PayLoad);
 	}
 }

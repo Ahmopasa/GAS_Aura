@@ -159,6 +159,16 @@ bool UAueaAbilitySystemLibrary::IsNotFriend(AActor* First, AActor* Second)
 	return !bFriends;
 }
 
+float UAueaAbilitySystemLibrary::GetXPRewardForClassAndLevel(const UObject* WorldContextObject, ECharacterClass CharacterClass, int32 CharacterLevel)
+{
+	auto* CharacterClassInfo = GetCharacterClassInfo(WorldContextObject);
+	if (CharacterClassInfo == nullptr) return 0;
+
+	const auto& Info = CharacterClassInfo->GetClassDefaultInfo(CharacterClass);
+
+	return Info.XPReward.GetValueAtLevel(CharacterLevel);
+}
+
 void UAueaAbilitySystemLibrary::SetIsBlockedHit(FGameplayEffectContextHandle& EffectContextHandle, bool bInIsBlockedHit)
 {
 	if (auto* AueaEffectContext = static_cast<FAueaGameplayEffectContext*>(EffectContextHandle.Get()))

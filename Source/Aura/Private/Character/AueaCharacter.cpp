@@ -16,6 +16,8 @@ AAueaCharacter::AAueaCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
+
+	CharacterClass = ECharacterClass::Elementalist;
 }
 
 void AAueaCharacter::PossessedBy(AController* NewController)
@@ -29,6 +31,13 @@ void AAueaCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 	InitAbilityActorInfo(); // Init ability actor info for the Client
+}
+
+void AAueaCharacter::AddToXP_Implementation(int32 InXP)
+{
+	AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
+	check(AueaPlayerState);
+	AueaPlayerState->AddToXP(InXP);
 }
 
 int32 AAueaCharacter::GetPlayerLevel()

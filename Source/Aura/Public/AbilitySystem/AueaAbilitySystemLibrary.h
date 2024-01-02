@@ -49,4 +49,6 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "AueaAbilitySystemLibrary|GameplayMechanics")
 	static bool IsNotFriend(AActor* First, AActor* Second);
+
+	static float GetXPRewardForClassAndLevel(const UObject* WorldContextObject, ECharacterClass CharacterClass, int32 CharacterLevel);
 };
