@@ -30,8 +30,10 @@ public:
 	virtual void LevelUp_Implementation() override;
 	virtual int32 GetAttributePointsReward_Implementation(int32 Level)const;
 	virtual void AddToAttributePoints_Implementation(int32 InAttributePoints);
+	virtual int32 GetAttributePoints_Implementation() const;
 	virtual int32 GetSpellPointsReward_Implementation(int32 Level)const;
 	virtual void AddToSpellPoints_Implementation(int32 InSpellPoints);
+	virtual int32 GetSpellPoints_Implementation() const;
 	//~end Player Interface
 
 	//~begin Combat Interface

@@ -173,12 +173,29 @@ void UAueaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 				IPlayerInterface::Execute_AddToPlayerLevel(Props.SourceCharacter, NumLevelUps);
 				IPlayerInterface::Execute_LevelUp(Props.SourceCharacter);
 
-				SetHealth(GetMaxHealth());
-				SetMana(GetMaxMana());
+				bTopOffHealth = true;
+				bTopOffMana = true;
 			}
 
 			IPlayerInterface::Execute_AddToXP(Props.SourceCharacter, LocalIncomingXP);
 		}
+	}
+}
+
+void UAueaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
+{
+	Super::PostAttributeChange(Attribute, OldValue, NewValue);
+
+	if (bTopOffHealth && Attribute == GetMaxHealthAttribute())
+	{
+		bTopOffHealth = false;
+		SetHealth(GetMaxHealth());
+	}
+
+	if (bTopOffMana && Attribute == GetMaxManaAttribute())
+	{
+		bTopOffMana = false;
+		SetMana(GetMaxMana());
 	}
 }
 

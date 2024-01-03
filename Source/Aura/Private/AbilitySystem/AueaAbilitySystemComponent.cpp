@@ -2,6 +2,8 @@
 #include "AueaGameplayTags.h"
 #include "AbilitySystem/Abilities/AueaGameplayAbility.h"
 #include "AueaLogChannel.h"
+#include <Interaction/PlayerInterface.h>
+#include <AbilitySystemBlueprintLibrary.h>
 
 FGameplayTag UAueaAbilitySystemComponent::GetAbilityTagFromSpec(const FGameplayAbilitySpec& AbilitySpec)
 {
@@ -93,6 +95,29 @@ void UAueaAbilitySystemComponent::ForEachAbility(const FForEachAbility& Delegate
 	for (const auto& AbilitySpec : GetActivatableAbilities())
 		if (!Delegate.ExecuteIfBound(AbilitySpec))
 			UE_LOG(LogAuea, Error, TEXT("Failed to execute delegate in %hs."), __FUNCTION__);
+}
+
+void UAueaAbilitySystemComponent::UpgradeAttributes(const FGameplayTag& AttributeTag)
+{
+	if (GetAvatarActor()->Implements<UPlayerInterface>())
+		if (IPlayerInterface::Execute_GetAttributePoints(GetAvatarActor()) > 0)
+			ServerUpgradeAttribute(AttributeTag);
+}
+
+void UAueaAbilitySystemComponent::ServerUpgradeAttribute_Implementation(const FGameplayTag& AttributeTag)
+{
+	FGameplayEventData PayLoad;
+	PayLoad.EventTag = AttributeTag;
+	PayLoad.EventMagnitude = 1.f;
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+		GetAvatarActor(), 
+		AttributeTag, 
+		PayLoad
+	);
+
+	if (GetAvatarActor()->Implements<UPlayerInterface>())
+		IPlayerInterface::Execute_AddToAttributePoints(GetAvatarActor(), -1);
 }
 
 void UAueaAbilitySystemComponent::OnRep_ActivateAbilities()

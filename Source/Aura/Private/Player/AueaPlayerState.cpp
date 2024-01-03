@@ -23,6 +23,8 @@ void AAueaPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(AAueaPlayerState, Level);
 	DOREPLIFETIME(AAueaPlayerState, XP);
+	DOREPLIFETIME(AAueaPlayerState, AttributePoints);
+	DOREPLIFETIME(AAueaPlayerState, SpellPoints);
 }
 
 UAbilitySystemComponent* AAueaPlayerState::GetAbilitySystemComponent() const
@@ -59,6 +61,18 @@ void AAueaPlayerState::SetXP(int32 InXP)
 	OnXPChangedDelegate.Broadcast(XP);
 }
 
+void AAueaPlayerState::AddToAttributePoints(int32 InPoints)
+{
+	AttributePoints += InPoints;
+	OnAttributePointsChangedDelegate.Broadcast(AttributePoints);
+}
+
+void AAueaPlayerState::AddToSpellPoints(int32 InPoints)
+{
+	SpellPoints += InPoints;
+	OnSpellPointsChangedDelegate.Broadcast(SpellPoints);
+}
+
 void AAueaPlayerState::OnRep_Level(int32 OldLevel)
 {
 	OnLevelChangedDelegate.Broadcast(Level);
@@ -67,4 +81,14 @@ void AAueaPlayerState::OnRep_Level(int32 OldLevel)
 void AAueaPlayerState::OnRep_XP(int32 OldXP)
 {
 	OnXPChangedDelegate.Broadcast(XP);
+}
+
+void AAueaPlayerState::OnRep_AttributePoints(int32 OldAttributePoints)
+{
+	OnAttributePointsChangedDelegate.Broadcast(AttributePoints);
+}
+
+void AAueaPlayerState::OnRep_SpellPoints(int32 OldSpellPoints)
+{
+	OnSpellPointsChangedDelegate.Broadcast(SpellPoints);
 }

@@ -33,6 +33,10 @@ public:
 
 	void ForEachAbility(const FForEachAbility& Delegate);
 
+	void UpgradeAttributes(const FGameplayTag& AttributeTag);
+
+	UFUNCTION(Server, Reliable)
+	void ServerUpgradeAttribute(const FGameplayTag& AttributeTag);
 
 protected:
 
