@@ -153,10 +153,32 @@ void UAueaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 	if (Data.EvaluatedData.Attribute == GetIncomingXPAttribute())
 	{
 		const auto LocalIncomingXP = GetIncomingXP();
-		SetIncomingXP(0.f);
 
-		if (Props.SourceCharacter->Implements<UPlayerInterface>())
-		IPlayerInterface::Execute_AddToXP(Props.SourceCharacter, LocalIncomingXP);
+		SetIncomingXP(0.f);
+		
+		if (Props.SourceCharacter->Implements<UPlayerInterface>() && Props.SourceCharacter->Implements<UCombatInterface>())
+		{
+			const auto CurrentLevel = ICombatInterface::Execute_GetPlayerLevel(Props.SourceCharacter);
+			const auto CurrentXP = IPlayerInterface::Execute_GetXP(Props.SourceCharacter);
+			const auto NewLevel = IPlayerInterface::Execute_FindLevelForXP(Props.SourceCharacter, CurrentXP + LocalIncomingXP);
+			const auto NumLevelUps = NewLevel - CurrentLevel;
+			if (NumLevelUps > 0)
+			{
+				const auto AttributePointsReward = IPlayerInterface::Execute_GetAttributePointsReward(Props.SourceCharacter, CurrentLevel);
+				IPlayerInterface::Execute_AddToAttributePoints(Props.SourceCharacter, AttributePointsReward);
+				
+				const auto SpellPointsReward = IPlayerInterface::Execute_GetSpellPointsReward(Props.SourceCharacter, CurrentLevel);
+				IPlayerInterface::Execute_AddToSpellPoints(Props.SourceCharacter, SpellPointsReward);
+				
+				IPlayerInterface::Execute_AddToPlayerLevel(Props.SourceCharacter, NumLevelUps);
+				IPlayerInterface::Execute_LevelUp(Props.SourceCharacter);
+
+				SetHealth(GetMaxHealth());
+				SetMana(GetMaxMana());
+			}
+
+			IPlayerInterface::Execute_AddToXP(Props.SourceCharacter, LocalIncomingXP);
+		}
 	}
 }
 
@@ -309,9 +331,9 @@ void UAueaAttributeSet::ShowFloatingText(const FEffectProperties& Props, float D
 
 void UAueaAttributeSet::SendXPEvent(const FEffectProperties& Props)
 {
-	if (auto* CombatInterface = Cast<ICombatInterface>(Props.TargetCharacter))
+	if (Props.TargetCharacter->Implements<UCombatInterface>())
 	{
-		const auto TargetLevel = CombatInterface->GetPlayerLevel();
+		const auto TargetLevel = ICombatInterface::Execute_GetPlayerLevel(Props.TargetCharacter);
 		const auto TargetClass = ICombatInterface::Execute_GetCharacterClass(Props.TargetCharacter);
 		const auto XPReward = UAueaAbilitySystemLibrary::GetXPRewardForClassAndLevel(Props.TargetCharacter, TargetClass, TargetLevel);
 		const auto& GameplayTags = FAueaGameplayTags::Get();

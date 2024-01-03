@@ -63,7 +63,7 @@ void AAueaEnemy::UnHighlightActor()
 	Weapon->SetRenderCustomDepth(false);
 }
 
-int32 AAueaEnemy::GetPlayerLevel()
+int32 AAueaEnemy::GetPlayerLevel_Implementation()
 {
 	return Level;
 }

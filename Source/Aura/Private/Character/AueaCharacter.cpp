@@ -2,12 +2,30 @@
 #include "Player/AueaPlayerState.h"
 #include "Player/AueaPlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/AueaAbilitySystemComponent.h"
+#include "AbilitySystem/Data/LevelUpInfo.h"
 #include "UI/HUD/AueaHUD.h"
+#include <NiagaraComponent.h>
+#include "Camera/CameraComponent.h"
 
 AAueaCharacter::AAueaCharacter()
 {
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>("CameraBoom");
+	CameraBoom->SetupAttachment(GetRootComponent());
+	CameraBoom->SetUsingAbsoluteRotation(true);
+	CameraBoom->bDoCollisionTest = false;
+
+	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>("TopDownCameraComponent");
+	TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	TopDownCameraComponent->bUsePawnControlRotation = false;
+
+
+	LevelUpNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("LevelUpNiagaraComponent");
+	LevelUpNiagaraComponent->SetupAttachment(GetRootComponent());
+	LevelUpNiagaraComponent->bAutoActivate = false;
+
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 400.f, 0.f);
 	GetCharacterMovement()->bConstrainToPlane = true;
@@ -33,6 +51,13 @@ void AAueaCharacter::OnRep_PlayerState()
 	InitAbilityActorInfo(); // Init ability actor info for the Client
 }
 
+int32 AAueaCharacter::FindLevelForXP_Implementation(int32 InXP) const
+{
+	AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
+	check(AueaPlayerState);
+	return AueaPlayerState->LevelUpInfo->FindLevelForXP(InXP);
+}
+
 void AAueaCharacter::AddToXP_Implementation(int32 InXP)
 {
 	AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
@@ -40,7 +65,50 @@ void AAueaCharacter::AddToXP_Implementation(int32 InXP)
 	AueaPlayerState->AddToXP(InXP);
 }
 
-int32 AAueaCharacter::GetPlayerLevel()
+int32 AAueaCharacter::GetXP_Implementation() const
+{
+	AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
+	check(AueaPlayerState);
+	return AueaPlayerState->GetXP();
+}
+
+void AAueaCharacter::AddToPlayerLevel_Implementation(int32 InPlayerLevel)
+{
+	AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
+	check(AueaPlayerState);
+	AueaPlayerState->AddToLevel(InPlayerLevel);
+}
+
+void AAueaCharacter::LevelUp_Implementation()
+{
+	MulticastLevelUpParticles();
+}
+
+int32 AAueaCharacter::GetAttributePointsReward_Implementation(int32 Level) const
+{
+	AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
+	check(AueaPlayerState);
+	return AueaPlayerState->LevelUpInfo->LevelUpInformation[Level].AttributePointAward;
+}
+
+void AAueaCharacter::AddToAttributePoints_Implementation(int32 InAttributePoints)
+{
+
+}
+
+int32 AAueaCharacter::GetSpellPointsReward_Implementation(int32 Level) const
+{
+	AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
+	check(AueaPlayerState);
+	return AueaPlayerState->LevelUpInfo->LevelUpInformation[Level].SpellPointAward;
+}
+
+void AAueaCharacter::AddToSpellPoints_Implementation(int32 InSpellPoints)
+{
+
+}
+
+int32 AAueaCharacter::GetPlayerLevel_Implementation()
 {
 	const AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
 	check(AueaPlayerState);
@@ -63,5 +131,18 @@ void AAueaCharacter::InitAbilityActorInfo()
 	}
 	
 	InitializeDefaultAttributes();
+}
+
+void AAueaCharacter::MulticastLevelUpParticles_Implementation() const
+{
+	if (IsValid(LevelUpNiagaraComponent))
+	{
+		const auto CameraLocation = TopDownCameraComponent->GetComponentLocation();
+		const auto NiagaSystemLocation = LevelUpNiagaraComponent->GetComponentLocation();
+		const auto ToCameraRotation = (CameraLocation - NiagaSystemLocation).Rotation();
+		LevelUpNiagaraComponent->SetWorldRotation(ToCameraRotation);
+		LevelUpNiagaraComponent->Activate(true);
+	}
+
 }
 

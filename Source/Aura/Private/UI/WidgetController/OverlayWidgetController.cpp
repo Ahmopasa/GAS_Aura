@@ -19,6 +19,12 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 {
 	auto* AueaPlayerState = CastChecked<AAueaPlayerState>(PlayerState);
 	AueaPlayerState->OnXPChangedDelegate.AddUObject(this, &UOverlayWidgetController::OnXPChanged);
+	AueaPlayerState->OnLevelChangedDelegate.AddLambda(
+		[this](int32 NewLevel) 
+		{
+			OnPlayerLevelChangedDelegate.Broadcast(NewLevel);
+		}
+	);
 
 	const auto* AueaAttributeSet = CastChecked<UAueaAttributeSet>(AttributeSet);
 

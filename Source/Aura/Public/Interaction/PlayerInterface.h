@@ -13,18 +13,42 @@ class UPlayerInterface : public UInterface
 	GENERATED_BODY()
 };
 
-/**
- * 
- */
 class AURA_API IPlayerInterface
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	// ~begin XP
+	UFUNCTION(BlueprintNativeEvent)
+	int32 FindLevelForXP(int32 InXP) const;
 	UFUNCTION(BlueprintNativeEvent)
 	void AddToXP(int32 XP);
+	UFUNCTION(BlueprintNativeEvent)
+	int32 GetXP() const;
+	// ~end XP
 
+	// ~begin Levelling UP
+	UFUNCTION(BlueprintNativeEvent)
+	void AddToPlayerLevel(int32 InPlayerLevel); 
+	UFUNCTION(BlueprintNativeEvent)
+	void LevelUp();
+	// ~end Levelling UP
+	
+	// ~begin Attribute Points
+	UFUNCTION(BlueprintNativeEvent)
+	int32 GetAttributePointsReward(int32 Level)const; 
+	UFUNCTION(BlueprintNativeEvent)
+	void AddToAttributePoints(int32 InAttributePoints);
+	// ~end Attribute Points
 
+	// ~begin Spell Points
+	UFUNCTION(BlueprintNativeEvent)
+	int32 GetSpellPointsReward(int32 Level)const;
+	UFUNCTION(BlueprintNativeEvent)
+	void AddToSpellPoints(int32 InSpellPoints);
+	// ~begin Spell Points
+
+	
 };
 
