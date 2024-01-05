@@ -4,6 +4,8 @@
 #include "AueaLogChannel.h"
 #include <Interaction/PlayerInterface.h>
 #include <AbilitySystemBlueprintLibrary.h>
+#include <AbilitySystem/AueaAbilitySystemLibrary.h>
+#include "AbilitySystem/Data/AbilityInfo.h"
 
 FGameplayTag UAueaAbilitySystemComponent::GetAbilityTagFromSpec(const FGameplayAbilitySpec& AbilitySpec)
 {
@@ -31,6 +33,18 @@ FGameplayTag UAueaAbilitySystemComponent::GetStatusFromSpec(const FGameplayAbili
 			return StatusTag;
 
 	return FGameplayTag();
+}
+
+FGameplayAbilitySpec* UAueaAbilitySystemComponent::GetSpecFromAbilityTag(const FGameplayTag& AbilityTag)
+{
+	FScopedAbilityListLock ActiveScopeLock(*this);
+
+	for (auto& AbilitySpec : GetActivatableAbilities())
+		for (auto Tag : AbilitySpec.Ability.Get()->AbilityTags)
+			if (Tag.MatchesTag(AbilityTag))
+				return &AbilitySpec; 
+
+	return nullptr;
 }
 
 void UAueaAbilitySystemComponent::AbilityActorInfoSet()
@@ -130,6 +144,20 @@ void UAueaAbilitySystemComponent::ServerUpgradeAttribute_Implementation(const FG
 		IPlayerInterface::Execute_AddToAttributePoints(GetAvatarActor(), -1);
 }
 
+void UAueaAbilitySystemComponent::UpdateAbilityStatus(int32 Level)
+{
+	auto AbilityInfo = UAueaAbilitySystemLibrary::GetAbilityInfo(GetAvatarActor());
+	for (const auto& Info : AbilityInfo->AbilityInformation)
+		if (Level >= Info.LevelRequirement && Info.AbilityTag.IsValid() && GetSpecFromAbilityTag(Info.AbilityTag) == nullptr)
+		{
+			auto AbilitySpec = FGameplayAbilitySpec(Info.Ability, 1);
+			AbilitySpec.DynamicAbilityTags.AddTag(FAueaGameplayTags::Get().Abilities_Status_Eligible);
+			GiveAbility(AbilitySpec);
+			MarkAbilitySpecDirty(AbilitySpec);
+			ClientUpdateAbilityStatus(Info.AbilityTag, FAueaGameplayTags::Get().Abilities_Status_Eligible);
+		}
+}
+
 void UAueaAbilitySystemComponent::OnRep_ActivateAbilities()
 {
 	Super::OnRep_ActivateAbilities();
@@ -139,6 +167,11 @@ void UAueaAbilitySystemComponent::OnRep_ActivateAbilities()
 		bStartupAbilitiesGiven = true;
 		AbilitiesGivenDelegate.Broadcast();
 	}
+}
+
+void UAueaAbilitySystemComponent::ClientUpdateAbilityStatus_Implementation(const FGameplayTag& AbilityTag, const FGameplayTag& StatusTag)
+{
+	AbilityStatusChanged.Broadcast(AbilityTag, StatusTag);
 }
 
 void UAueaAbilitySystemComponent::ClientEffectApplied_Implementation(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle ActiveEffectHandle)

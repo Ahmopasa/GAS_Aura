@@ -77,6 +77,10 @@ void AAueaCharacter::AddToPlayerLevel_Implementation(int32 InPlayerLevel)
 	AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
 	check(AueaPlayerState);
 	AueaPlayerState->AddToLevel(InPlayerLevel);
+
+	if (auto ASC = Cast<UAueaAbilitySystemComponent>(GetAbilitySystemComponent()))
+		ASC->UpdateAbilityStatus(AueaPlayerState->GetPlayerLevel());
+
 }
 
 void AAueaCharacter::LevelUp_Implementation()

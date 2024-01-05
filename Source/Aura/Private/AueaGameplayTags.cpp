@@ -270,6 +270,15 @@ void FAueaGameplayTags::InitializeNativeGameplayTags()
 	);
 
 	/*
+	*	Abilities | Lighting
+	*/
+
+	GameplayTags.Abilities_Lighting_LightingBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Lighting.Lightingbolt"),
+		FString("Lightingbolt Ability Tag")
+	);
+
+	/*
 	*	Cooldown | Fire
 	*/
 

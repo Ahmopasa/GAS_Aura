@@ -104,9 +104,16 @@ void UAueaAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContext
 
 UCharacterClassInfo* UAueaAbilitySystemLibrary::GetCharacterClassInfo(const UObject* WorldContextObject)
 {
-	AAueaGameModeBase* AueaGameMode = Cast<AAueaGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
+	const AAueaGameModeBase* AueaGameMode = Cast<AAueaGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
 	if (AueaGameMode == nullptr) return nullptr;
 	return AueaGameMode->CharacterClassInfo;
+}
+
+UAbilityInfo* UAueaAbilitySystemLibrary::GetAbilityInfo(const UObject* WorldContextObject)
+{
+	const AAueaGameModeBase* AueaGameMode = Cast<AAueaGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
+	if (AueaGameMode == nullptr) return nullptr;
+	return AueaGameMode->AbilityInfo;
 }
 
 bool UAueaAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle)

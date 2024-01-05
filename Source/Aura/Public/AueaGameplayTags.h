@@ -109,6 +109,12 @@ public:
 	FGameplayTag Abilities_Fire_Firebolt;
 
 	/*
+	*	Abilities | Lighting
+	*/
+
+	FGameplayTag Abilities_Lighting_LightingBolt;
+
+	/*
 	*	Cooldown | Fire
 	*/
 
