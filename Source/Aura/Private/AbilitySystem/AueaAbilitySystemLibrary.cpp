@@ -1,43 +1,57 @@
 #include "AbilitySystem/AueaAbilitySystemLibrary.h"
-#include "Kismet/GameplayStatics.h"
-#include "UI/WidgetController/AueaWidgetController.h"
-#include "UI/HUD/AueaHUD.h"
-#include "Player/AueaPlayerState.h"
-#include "Game/AueaGameModeBase.h"
-#include "AbilitySystemComponent.h"
 #include <AueaAbilityTypes.h>
+#include "Game/AueaGameModeBase.h"
 #include <Interaction/CombatInterface.h>
+#include "Kismet/GameplayStatics.h"
+#include "Player/AueaPlayerState.h"
+#include "UI/HUD/AueaHUD.h"
+#include "UI/WidgetController/AueaWidgetController.h"
 
-UOverlayWidgetController* UAueaAbilitySystemLibrary::GetOverlayWidgetController(const UObject* WorldContextObject)
+bool UAueaAbilitySystemLibrary::MakeWidgetControllerParams(const UObject* WorldContextObject, FWidgetControllerParams& OutWCParams, AAueaHUD*& OutAueaHUD)
 {
 	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
 	{
-		if (AAueaHUD* AueaHUD = Cast<AAueaHUD>(PC->GetHUD()))
+		OutAueaHUD = Cast<AAueaHUD>(PC->GetHUD());
+		if (OutAueaHUD)
 		{
 			AAueaPlayerState* PS = PC->GetPlayerState<AAueaPlayerState>();
 			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
 			UAttributeSet* AS = PS->GetAttributeSet();
-			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-			return AueaHUD->GetOverlayWidgetController(WidgetControllerParams);
+			
+			OutWCParams.AttributeSet = AS;
+			OutWCParams.AbilitySystemComponent = ASC;
+			OutWCParams.PlayerState = PS;
+			OutWCParams.PlayerController = PC;
+			return true;
 		}
 	}
+
+	return false;
+}
+
+UOverlayWidgetController* UAueaAbilitySystemLibrary::GetOverlayWidgetController(const UObject* WorldContextObject)
+{
+	FWidgetControllerParams WCParams; 
+	AAueaHUD* AueaHUD = nullptr;
+	if (MakeWidgetControllerParams(WorldContextObject, WCParams, AueaHUD)) return AueaHUD->GetOverlayWidgetController(WCParams);
 
 	return nullptr; 
 }
 
 UAttributeMenuWidgetController* UAueaAbilitySystemLibrary::GetAttributeMenuWidgetController(const UObject* WorldContextObject)
 {
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
-	{
-		if (AAueaHUD* AueaHUD = Cast<AAueaHUD>(PC->GetHUD()))
-		{
-			AAueaPlayerState* PS = PC->GetPlayerState<AAueaPlayerState>();
-			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
-			UAttributeSet* AS = PS->GetAttributeSet();
-			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-			return AueaHUD->GetAttributeMenuWidgetController(WidgetControllerParams);
-		}
-	}
+	FWidgetControllerParams WCParams;
+	AAueaHUD* AueaHUD = nullptr;
+	if (MakeWidgetControllerParams(WorldContextObject, WCParams, AueaHUD)) return AueaHUD->GetAttributeMenuWidgetController(WCParams);
+
+	return nullptr;
+}
+
+USpellMenuWidgetController* UAueaAbilitySystemLibrary::GetSpellMenuWidgetController(const UObject* WorldContextObject)
+{
+	FWidgetControllerParams WCParams;
+	AAueaHUD* AueaHUD = nullptr;
+	if (MakeWidgetControllerParams(WorldContextObject, WCParams, AueaHUD)) return AueaHUD->GetSpellMenuWidgetController(WCParams);
 
 	return nullptr;
 }

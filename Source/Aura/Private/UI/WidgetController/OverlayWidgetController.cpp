@@ -7,49 +7,45 @@
 
 void UOverlayWidgetController::BroadcastInitialValues()
 {
-	const UAueaAttributeSet* AueaAttributeSet = CastChecked<UAueaAttributeSet>(AttributeSet);
 	
-	OnHealthChanged.Broadcast(AueaAttributeSet->GetHealth());
-	OnMaxHealthChanged.Broadcast(AueaAttributeSet->GetMaxHealth());
-	OnManaChanged.Broadcast(AueaAttributeSet->GetMana());
-	OnMaxManaChanged.Broadcast(AueaAttributeSet->GetMaxMana());
+	OnHealthChanged.Broadcast(GetAueaAS()->GetHealth());
+	OnMaxHealthChanged.Broadcast(GetAueaAS()->GetMaxHealth());
+	OnManaChanged.Broadcast(GetAueaAS()->GetMana());
+	OnMaxManaChanged.Broadcast(GetAueaAS()->GetMaxMana());
 }
 
 void UOverlayWidgetController::BindCallbacksToDependencies()
 {
-	auto* AueaPlayerState = CastChecked<AAueaPlayerState>(PlayerState);
-	AueaPlayerState->OnXPChangedDelegate.AddUObject(this, &UOverlayWidgetController::OnXPChanged);
-	AueaPlayerState->OnLevelChangedDelegate.AddLambda(
+	GetAueaPS()->OnXPChangedDelegate.AddUObject(this, &UOverlayWidgetController::OnXPChanged);
+	GetAueaPS()->OnLevelChangedDelegate.AddLambda(
 		[this](int32 NewLevel) 
 		{
 			OnPlayerLevelChangedDelegate.Broadcast(NewLevel);
 		}
 	);
 
-	const auto* AueaAttributeSet = CastChecked<UAueaAttributeSet>(AttributeSet);
-
-	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AueaAttributeSet->GetHealthAttribute()).AddLambda(
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAueaAS()->GetHealthAttribute()).AddLambda(
 		[this](const FOnAttributeChangeData& Data) { OnHealthChanged.Broadcast(Data.NewValue); }
 	);
 
-	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AueaAttributeSet->GetMaxHealthAttribute()).AddLambda(
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAueaAS()->GetMaxHealthAttribute()).AddLambda(
 		[this](const FOnAttributeChangeData& Data) { OnMaxHealthChanged.Broadcast(Data.NewValue); }
 	);
 
-	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AueaAttributeSet->GetManaAttribute()).AddLambda(
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAueaAS()->GetManaAttribute()).AddLambda(
 		[this](const FOnAttributeChangeData& Data) { OnManaChanged.Broadcast(Data.NewValue); }
 	);
 
-	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AueaAttributeSet->GetMaxManaAttribute()).AddLambda(
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAueaAS()->GetMaxManaAttribute()).AddLambda(
 		[this](const FOnAttributeChangeData& Data) { OnMaxManaChanged.Broadcast(Data.NewValue); }
 	);
 
-	if (auto* AueaASC = Cast<UAueaAbilitySystemComponent>(AbilitySystemComponent))
+	if (GetAueaASC())
 	{
-		if (AueaASC->bStartupAbilitiesGiven) OnInitializeStartupAbilities(AueaASC);
-		else AueaASC->AbilitiesGivenDelegate.AddUObject(this, &UOverlayWidgetController::OnInitializeStartupAbilities);
+		if (GetAueaASC()->bStartupAbilitiesGiven) BroadcastAbilityInfo();
+		else GetAueaASC()->AbilitiesGivenDelegate.AddUObject(this, &UOverlayWidgetController::BroadcastAbilityInfo);
 
-		AueaASC->EffectAssetTags.AddLambda(
+		GetAueaASC()->EffectAssetTags.AddLambda(
 			[this](const FGameplayTagContainer& AssetTags) 
 			{
 				for (const auto& Tag : AssetTags)
@@ -71,26 +67,9 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 
 }
 
-void UOverlayWidgetController::OnInitializeStartupAbilities(UAueaAbilitySystemComponent* AueaAbilitySystemComponent)
+void UOverlayWidgetController::OnXPChanged(int32 NewXP)
 {
-	if (!AueaAbilitySystemComponent->bStartupAbilitiesGiven) return;
-
-	FForEachAbility BroadcastDelegate;
-	BroadcastDelegate.BindLambda(
-		[this, AueaAbilitySystemComponent] (const FGameplayAbilitySpec& AbilitySpec) {
-			auto Info = AbilityInfo->FindAbilityInfoForTag(AueaAbilitySystemComponent->GetAbilityTagFromSpec(AbilitySpec));
-			Info.InputTag = AueaAbilitySystemComponent->GetInputTagFromSpec(AbilitySpec);
-			AbilityInfoDelegate.Broadcast(Info);
-		}
-	);
-
-	AueaAbilitySystemComponent->ForEachAbility(BroadcastDelegate);
-}
-
-void UOverlayWidgetController::OnXPChanged(int32 NewXP) const
-{
-	const auto* AueaPlayerState = CastChecked<AAueaPlayerState>(PlayerState);
-	const ULevelUpInfo* LevelUpInfo = AueaPlayerState->LevelUpInfo;
+	const ULevelUpInfo* LevelUpInfo = GetAueaPS()->LevelUpInfo;
 	checkf(LevelUpInfo, TEXT("Unable to find LevelUpInfo. Please, fill out AueaPlayerState blueprint."));
 	
 	const auto Level = LevelUpInfo->FindLevelForXP(NewXP);

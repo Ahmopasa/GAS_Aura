@@ -5,9 +5,15 @@
 #include "AueaWidgetController.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChangedSignature, int32, NewValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityInfoSignature, const FAueaAbilityInfo&, Info);
 
 class UAbilitySystemComponent;
 class UAttributeSet;
+class AAueaPlayerController;
+class AAueaPlayerState;
+class UAueaAbilitySystemComponent;
+class UAueaAttributeSet;
+class UAbilityInfo;
 
 USTRUCT(BlueprintType)
 struct FWidgetControllerParams {
@@ -45,16 +51,37 @@ public:
 
 	virtual void BindCallbacksToDependencies();
 
+	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
+	FAbilityInfoSignature AbilityInfoDelegate;
+
+	void BroadcastAbilityInfo();
+
 protected:
+	// ~begin Base
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget Data")
+	TObjectPtr<UAbilityInfo> AbilityInfo;
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<APlayerController> PlayerController;
-
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<APlayerState> PlayerState;
-
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
-
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<UAttributeSet> AttributeSet;
+	// ~end Base
+
+	// ~begin Auea
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
+	TObjectPtr<AAueaPlayerController> AueaPlayerController;
+	AAueaPlayerController* GetAueaPC();
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
+	TObjectPtr<AAueaPlayerState> AueaPlayerState;
+	AAueaPlayerState* GetAueaPS();
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
+	TObjectPtr<UAueaAbilitySystemComponent> AueaAbilitySystemComponent;
+	UAueaAbilitySystemComponent* GetAueaASC();
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
+	TObjectPtr<UAueaAttributeSet> AueaAttributeSet;
+	UAueaAttributeSet* GetAueaAS();
+	// ~end Auea
 };

@@ -7,8 +7,11 @@
 #include "Data/CharacterClassInfo.h"
 #include "AueaAbilitySystemLibrary.generated.h"
 
-class UOverlayWidgetController;
+class USpellMenuWidgetController;
+class UAttributeMenuWidgetController;
 class UAbilitySystemComponent;
+class UOverlayWidgetController;
+struct FWidgetControllerParams; 
 
 UCLASS()
 class AURA_API UAueaAbilitySystemLibrary : public UBlueprintFunctionLibrary
@@ -16,13 +19,18 @@ class AURA_API UAueaAbilitySystemLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 	
 public:
+	UFUNCTION(BlueprintPure, Category = "AueaAbilitySystemLibrary|WidgetController", meta = (DefaultToSelf = "WorldContextObject"))
+	static bool MakeWidgetControllerParams(const UObject* WorldContextObject, FWidgetControllerParams& OutWCParams, AAueaHUD*& OutAueaHUD);
 
-	UFUNCTION(BlueprintPure, Category = "AueaAbilitySystemLibrary|WidgetController")
+	UFUNCTION(BlueprintPure, Category = "AueaAbilitySystemLibrary|WidgetController", meta = (DefaultToSelf = "WorldContextObject"))
 	static UOverlayWidgetController* GetOverlayWidgetController(const UObject* WorldContextObject);
 	
-	UFUNCTION(BlueprintPure, Category = "AueaAbilitySystemLibrary|WidgetController")
+	UFUNCTION(BlueprintPure, Category = "AueaAbilitySystemLibrary|WidgetController", meta = (DefaultToSelf = "WorldContextObject"))
 	static UAttributeMenuWidgetController* GetAttributeMenuWidgetController(const UObject* WorldContextObject);
 	
+	UFUNCTION(BlueprintPure, Category = "AueaAbilitySystemLibrary|WidgetController", meta = (DefaultToSelf = "WorldContextObject"))
+	static USpellMenuWidgetController* GetSpellMenuWidgetController(const UObject* WorldContextObject);
+
 	UFUNCTION(BlueprintCallable, Category = "AueaAbilitySystemLibrary|CharacterClassDefaults")
 	static void InitializeDefaultAttributes(const UObject* WorldContextObject, ECharacterClass CharacterClass, float Level, UAbilitySystemComponent* ASC);
 

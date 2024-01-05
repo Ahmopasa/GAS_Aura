@@ -6,18 +6,16 @@
 
 void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 {
-	UAueaAttributeSet* AS = CastChecked<UAueaAttributeSet>(AttributeSet);
 	check(AttributeInfo);
-	for (auto& Pair : AS->TagsToAttributes)
+	for (auto& Pair : GetAueaAS()->TagsToAttributes)
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(Pair.Value()).AddLambda(
-			[this, Pair, AS](const FOnAttributeChangeData& Data) 
+			[this, Pair](const FOnAttributeChangeData& Data) 
 			{
 				BroadcastAttributeInfo(Pair.Key, Pair.Value());
 			}
 		);
 
-	auto* AueaPlayerState = CastChecked<AAueaPlayerState>(PlayerState);
-	AueaPlayerState->OnAttributePointsChangedDelegate.AddLambda(
+	GetAueaPS()->OnAttributePointsChangedDelegate.AddLambda(
 		[this](int32 Points) 
 		{
 			AttributePointsChangedDelegate.Broadcast(Points);
@@ -32,8 +30,7 @@ void UAttributeMenuWidgetController::BroadcastInitialValues()
 	for (auto& Pair : AS->TagsToAttributes)
 		BroadcastAttributeInfo(Pair.Key, Pair.Value());
 
-	auto* AueaPlayerState = CastChecked<AAueaPlayerState>(PlayerState);
-	AttributePointsChangedDelegate.Broadcast(AueaPlayerState->GetAttributePoints());
+	AttributePointsChangedDelegate.Broadcast(GetAueaPS()->GetAttributePoints());
 }
 
 void UAttributeMenuWidgetController::UpgradeAttributes(const FGameplayTag& AttributeTag)
