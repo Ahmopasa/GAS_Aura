@@ -4,7 +4,7 @@
 #include "Actor/AueaProjectile.h"
 #include "Interaction/CombatInterface.h"
 
-#include "Aura/Public/AueaGameplayTags.h"
+
 
 void UAueaProjectileSpell::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {

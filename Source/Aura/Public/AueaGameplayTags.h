@@ -84,6 +84,7 @@ public:
 	FGameplayTag Abilities_Attack;
 	FGameplayTag Abilities_Summon;
 	FGameplayTag Abilities_HitReact;
+	FGameplayTag Abilities_NONE;
 
 	/*
 	*	Abilities | Status

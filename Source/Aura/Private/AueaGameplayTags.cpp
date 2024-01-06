@@ -217,6 +217,11 @@ void FAueaGameplayTags::InitializeNativeGameplayTags()
 		FString("Hit React Ability")
 	);
 
+	GameplayTags.Abilities_NONE = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.NONE"),
+		FString("No Ability Tag - like nullptr")
+	);
+
 	/*
 	*	Abilities | Status
 	*/
