@@ -35,6 +35,22 @@ FGameplayTag UAueaAbilitySystemComponent::GetStatusFromSpec(const FGameplayAbili
 	return FGameplayTag();
 }
 
+FGameplayTag UAueaAbilitySystemComponent::GetStatusFromAbilityTag(const FGameplayTag& AbilityTag)
+{
+	if (const auto Spec = GetSpecFromAbilityTag(AbilityTag))
+		return GetStatusFromSpec(*Spec);
+
+	return FGameplayTag();
+}
+
+FGameplayTag UAueaAbilitySystemComponent::GetInputTagFromAbilityTag(const FGameplayTag& AbilityTag)
+{
+	if (const auto Spec = GetSpecFromAbilityTag(AbilityTag))
+		return GetInputTagFromSpec(*Spec);
+
+	return FGameplayTag();
+}
+
 FGameplayAbilitySpec* UAueaAbilitySystemComponent::GetSpecFromAbilityTag(const FGameplayTag& AbilityTag)
 {
 	FScopedAbilityListLock ActiveScopeLock(*this);
@@ -189,6 +205,36 @@ void UAueaAbilitySystemComponent::ServerSpendSpellPoint_Implementation(const FGa
 	}
 }
 
+void UAueaAbilitySystemComponent::ServerEquipAbility_Implementation(const FGameplayTag& AbilityTag, const FGameplayTag& Slot)
+{
+	if (auto AbilitySpec = GetSpecFromAbilityTag(AbilityTag))
+	{
+		const auto& GameplayTags = FAueaGameplayTags::Get();
+		const auto& PrevSlot = GetInputTagFromSpec(*AbilitySpec);
+		const auto& Status = GetStatusFromSpec(*AbilitySpec);
+		const auto bStatusValid = Status == GameplayTags.Abilities_Status_Equipped || Status == GameplayTags.Abilities_Status_Unlocked;
+		if (bStatusValid)
+		{
+			ClearAbilitiesOfSlot(Slot);
+			ClearSlot(AbilitySpec);
+			AbilitySpec->DynamicAbilityTags.AddTag(Slot);
+			if (Status.MatchesTagExact(GameplayTags.Abilities_Status_Unlocked))
+			{
+				AbilitySpec->DynamicAbilityTags.RemoveTag(GameplayTags.Abilities_Status_Unlocked);
+				AbilitySpec->DynamicAbilityTags.AddTag(GameplayTags.Abilities_Status_Equipped);
+			}
+			MarkAbilitySpecDirty(*AbilitySpec);
+		}
+
+		ClientEquipAbility(AbilityTag, GameplayTags.Abilities_Status_Equipped, Slot, PrevSlot);
+	}
+}
+
+void UAueaAbilitySystemComponent::ClientEquipAbility(const FGameplayTag& AbilityTag, const FGameplayTag& Status, const FGameplayTag& Slot, const FGameplayTag& PreviousSlot)
+{
+	AbilityEquipped.Broadcast(AbilityTag, Status, Slot, PreviousSlot);
+}
+
 bool UAueaAbilitySystemComponent::GetDescriptionsByAbilityTag(const FGameplayTag& AbilityTag, FString& OutDescription, FString& OutNextLevelDescription)
 {
 	if (const auto AbilitySpec = GetSpecFromAbilityTag(AbilityTag))
@@ -208,6 +254,30 @@ bool UAueaAbilitySystemComponent::GetDescriptionsByAbilityTag(const FGameplayTag
 		OutDescription = UAueaGameplayAbility::GetLockedDescription(AbilityInfo->FindAbilityInfoForTag(AbilityTag).LevelRequirement);
 	OutNextLevelDescription = FString();
 	
+	return false;
+}
+
+void UAueaAbilitySystemComponent::ClearSlot(FGameplayAbilitySpec* Spec)
+{
+	const auto Slot = GetInputTagFromSpec(*Spec);
+	Spec->DynamicAbilityTags.RemoveTag(Slot);
+	MarkAbilitySpecDirty(*Spec);
+}
+
+void UAueaAbilitySystemComponent::ClearAbilitiesOfSlot(const FGameplayTag& Slot)
+{
+	FScopedAbilityListLock ActiveScopeLock(*this);
+	for (auto& Spec : GetActivatableAbilities())
+		if (AbilityHasSlot(&Spec, Slot))
+			ClearSlot(&Spec);
+}
+
+bool UAueaAbilitySystemComponent::AbilityHasSlot(FGameplayAbilitySpec* Spec, const FGameplayTag& Slot)
+{
+	for (auto Tag : Spec->DynamicAbilityTags)
+		if (Tag.MatchesTagExact(Slot))
+			return true;
+
 	return false;
 }
 

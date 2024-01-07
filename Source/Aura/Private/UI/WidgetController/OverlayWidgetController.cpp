@@ -4,6 +4,7 @@
 #include "AbilitySystem/Data/AbilityInfo.h"
 #include "Player/AueaPlayerState.h"
 #include "AbilitySystem/Data/LevelUpInfo.h"
+#include "AueaGameplayTags.h"
 
 void UOverlayWidgetController::BroadcastInitialValues()
 {
@@ -42,6 +43,8 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 
 	if (GetAueaASC())
 	{
+		GetAueaASC()->AbilityEquipped.AddUObject(this, &UOverlayWidgetController::OnAbilityEquipped);
+
 		if (GetAueaASC()->bStartupAbilitiesGiven) BroadcastAbilityInfo();
 		else GetAueaASC()->AbilitiesGivenDelegate.AddUObject(this, &UOverlayWidgetController::BroadcastAbilityInfo);
 
@@ -64,7 +67,6 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 			}
 		);
 	}
-
 }
 
 void UOverlayWidgetController::OnXPChanged(int32 NewXP)
@@ -84,4 +86,19 @@ void UOverlayWidgetController::OnXPChanged(int32 NewXP)
 		OnXPPercentChangedDelegate.Broadcast(XPBarPercent);
 	}
 
+}
+
+void UOverlayWidgetController::OnAbilityEquipped(const FGameplayTag& AbilityTag, const FGameplayTag& Status, const FGameplayTag& Slot, const FGameplayTag& PreviousSlot) const
+{
+	const auto& GameplayTags = FAueaGameplayTags::Get();
+	FAueaAbilityInfo LastSlotInfo;
+	LastSlotInfo.StatusTag = GameplayTags.Abilities_Status_Unlocked;
+	LastSlotInfo.InputTag = PreviousSlot;
+	LastSlotInfo.AbilityTag = GameplayTags.Abilities_NONE;
+	AbilityInfoDelegate.Broadcast(LastSlotInfo);
+
+	auto Info = AbilityInfo->FindAbilityInfoForTag(AbilityTag);
+	Info.StatusTag = Status;
+	Info.InputTag = Slot;
+	AbilityInfoDelegate.Broadcast(Info);
 }
