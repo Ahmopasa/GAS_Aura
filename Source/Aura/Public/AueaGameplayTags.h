@@ -78,6 +78,25 @@ public:
 	TMap<FGameplayTag, FGameplayTag> DamageTypesToResistances;
 
 	/*
+	*	Debuffs
+	*/
+
+	FGameplayTag Debuff_Burn; 
+	FGameplayTag Debuff_Stun;
+	FGameplayTag Debuff_ARCANE_WIP;
+	FGameplayTag Debuff_PHYSICAL_WIP;
+	TMap<FGameplayTag, FGameplayTag> DamageTypesToDebuffs;
+
+	/*
+	*	Debuffs | Properties
+	*/
+
+	FGameplayTag Debuff_Properties_Chance;
+	FGameplayTag Debuff_Properties_Damage;
+	FGameplayTag Debuff_Properties_Frequency;
+	FGameplayTag Debuff_Properties_Duration;
+
+	/*
 	*	Abilities
 	*/
 
@@ -144,8 +163,6 @@ public:
 	*/
 
 	FGameplayTag Effects_HitReact;
-
-
 
 private:
 	static FAueaGameplayTags GameplayTags; 

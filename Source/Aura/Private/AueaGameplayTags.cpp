@@ -190,13 +190,70 @@ void FAueaGameplayTags::InitializeNativeGameplayTags()
 	);
 
 	/*
-	*	Mapping of Damage Types to Resistances
+	*	Mapping Damage Types to Resistances
 	*/
 
 	GameplayTags.DamageTypesToResistances.Add(GameplayTags.Damage_Fire, GameplayTags.Attributes_Secondary_Resistance_Fire);
 	GameplayTags.DamageTypesToResistances.Add(GameplayTags.Damage_Lighting, GameplayTags.Attributes_Secondary_Resistance_Lighting);
 	GameplayTags.DamageTypesToResistances.Add(GameplayTags.Damage_Arcane, GameplayTags.Attributes_Secondary_Resistance_Arcane);
 	GameplayTags.DamageTypesToResistances.Add(GameplayTags.Damage_Physical, GameplayTags.Attributes_Secondary_Resistance_Physical);
+
+	/*
+	*	Debuffs
+	*/
+
+	GameplayTags.Debuff_Burn = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.Burn"),
+		FString("Debuff of Fire Damage")
+	);
+
+	GameplayTags.Debuff_Stun = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.Stun"),
+		FString("Debuff of Lighting Damage")
+	);
+
+	GameplayTags.Debuff_ARCANE_WIP = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.ARCANE_WIP"),
+		FString("Debuff of Arcane Damage")
+	);
+
+	GameplayTags.Debuff_PHYSICAL_WIP = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.PHYSICAL_WIP"),
+		FString("Debuff of Physical Damage")
+	);
+
+	/*
+	*	Mapping Damage Types to Debuffs
+	*/
+
+	GameplayTags.DamageTypesToDebuffs.Add(GameplayTags.Damage_Fire, GameplayTags.Debuff_Burn);
+	GameplayTags.DamageTypesToDebuffs.Add(GameplayTags.Damage_Lighting, GameplayTags.Debuff_Stun);
+	GameplayTags.DamageTypesToDebuffs.Add(GameplayTags.Damage_Arcane, GameplayTags.Debuff_ARCANE_WIP);
+	GameplayTags.DamageTypesToDebuffs.Add(GameplayTags.Damage_Physical, GameplayTags.Debuff_PHYSICAL_WIP);
+
+	/*
+	*	Debuffs | Properties
+	*/
+
+	GameplayTags.Debuff_Properties_Chance = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.Properties.Chance"),
+		FString("Debuff Chance")
+	);
+
+	GameplayTags.Debuff_Properties_Damage = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.Properties.Damage"),
+		FString("Debuff Damage")
+	);
+
+	GameplayTags.Debuff_Properties_Frequency = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.Properties.Frequency"),
+		FString("Debuff Frequency")
+	);
+
+	GameplayTags.Debuff_Properties_Duration = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.Properties.Duration"),
+		FString("Debuff Duration")
+	);
 
 	/*
 	*	Abilities

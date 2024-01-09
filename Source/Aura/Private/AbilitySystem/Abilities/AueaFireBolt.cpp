@@ -3,7 +3,7 @@
 
 FString UAueaFireBolt::GetDescription(int32 Level)
 {
-	const auto Damage = GetDamageByDamageType(Level, FAueaGameplayTags::Get().Damage_Fire);
+	const auto ScaledDamage = Damage.GetValueAtLevel(Level);
 	const auto ManaCost = FMath::Abs(GetManaCost(Level));
 	const auto Cooldown = GetCooldown(Level);
 
@@ -29,7 +29,7 @@ FString UAueaFireBolt::GetDescription(int32 Level)
 				"<Small>- Mana Cost: </>"
 				"<ManaCost>%.2f</>\n"
 			), /*The Text*/
-			Damage, /*Damage Amount*/
+			ScaledDamage, /*Damage Amount*/
 			Cooldown, /*Cooldown Duration*/
 			Level, /*Level Amount*/
 			ManaCost /*Costs of Mana*/
@@ -40,7 +40,7 @@ FString UAueaFireBolt::GetDescription(int32 Level)
 
 FString UAueaFireBolt::GetNextLevelDescription(int32 Level)
 {
-	const auto Damage = GetDamageByDamageType(Level, FAueaGameplayTags::Get().Damage_Fire);
+	const auto ScaledDamage = Damage.GetValueAtLevel(Level);
 	const auto ManaCost = FMath::Abs(GetManaCost(Level));
 	const auto Cooldown = GetCooldown(Level);
 
@@ -69,7 +69,7 @@ FString UAueaFireBolt::GetNextLevelDescription(int32 Level)
 			"<ManaCost>%.2f</>\n"
 		),	/*The Text*/
 		FMath::Min(Level, NumProjectiles), /*Number of Projectiles*/
-		Damage, /*Damage Amount*/
+		ScaledDamage, /*Damage Amount*/
 		Cooldown, /*Cooldown Duration*/
 		Level, /*Level Amount*/
 		ManaCost /*Costs of Mana*/

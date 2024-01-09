@@ -1,11 +1,14 @@
 #include "AbilitySystem/AueaAbilitySystemLibrary.h"
-#include <AueaAbilityTypes.h>
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AueaAbilityTypes.h"
+#include "AueaGameplayTags.h"
 #include "Game/AueaGameModeBase.h"
 #include <Interaction/CombatInterface.h>
 #include "Kismet/GameplayStatics.h"
 #include "Player/AueaPlayerState.h"
 #include "UI/HUD/AueaHUD.h"
 #include "UI/WidgetController/AueaWidgetController.h"
+
 
 bool UAueaAbilitySystemLibrary::MakeWidgetControllerParams(const UObject* WorldContextObject, FWidgetControllerParams& OutWCParams, AAueaHUD*& OutAueaHUD)
 {
@@ -33,7 +36,8 @@ UOverlayWidgetController* UAueaAbilitySystemLibrary::GetOverlayWidgetController(
 {
 	FWidgetControllerParams WCParams; 
 	AAueaHUD* AueaHUD = nullptr;
-	if (MakeWidgetControllerParams(WorldContextObject, WCParams, AueaHUD)) return AueaHUD->GetOverlayWidgetController(WCParams);
+	if (MakeWidgetControllerParams(WorldContextObject, WCParams, AueaHUD)) 
+		return AueaHUD->GetOverlayWidgetController(WCParams);
 
 	return nullptr; 
 }
@@ -42,7 +46,8 @@ UAttributeMenuWidgetController* UAueaAbilitySystemLibrary::GetAttributeMenuWidge
 {
 	FWidgetControllerParams WCParams;
 	AAueaHUD* AueaHUD = nullptr;
-	if (MakeWidgetControllerParams(WorldContextObject, WCParams, AueaHUD)) return AueaHUD->GetAttributeMenuWidgetController(WCParams);
+	if (MakeWidgetControllerParams(WorldContextObject, WCParams, AueaHUD)) 
+		return AueaHUD->GetAttributeMenuWidgetController(WCParams);
 
 	return nullptr;
 }
@@ -51,7 +56,8 @@ USpellMenuWidgetController* UAueaAbilitySystemLibrary::GetSpellMenuWidgetControl
 {
 	FWidgetControllerParams WCParams;
 	AAueaHUD* AueaHUD = nullptr;
-	if (MakeWidgetControllerParams(WorldContextObject, WCParams, AueaHUD)) return AueaHUD->GetSpellMenuWidgetController(WCParams);
+	if (MakeWidgetControllerParams(WorldContextObject, WCParams, AueaHUD)) 
+		return AueaHUD->GetSpellMenuWidgetController(WCParams);
 
 	return nullptr;
 }
@@ -106,6 +112,7 @@ UCharacterClassInfo* UAueaAbilitySystemLibrary::GetCharacterClassInfo(const UObj
 {
 	const AAueaGameModeBase* AueaGameMode = Cast<AAueaGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
 	if (AueaGameMode == nullptr) return nullptr;
+
 	return AueaGameMode->CharacterClassInfo;
 }
 
@@ -113,15 +120,14 @@ UAbilityInfo* UAueaAbilitySystemLibrary::GetAbilityInfo(const UObject* WorldCont
 {
 	const AAueaGameModeBase* AueaGameMode = Cast<AAueaGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
 	if (AueaGameMode == nullptr) return nullptr;
+
 	return AueaGameMode->AbilityInfo;
 }
 
 bool UAueaAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle)
 {
 	if (const auto* AueaEffectContext = static_cast<const FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
-	{
 		return AueaEffectContext->IsBlockedHit();
-	}
 
 	return false;
 }
@@ -129,11 +135,94 @@ bool UAueaAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle&
 bool UAueaAbilitySystemLibrary::IsCriticalHit(const FGameplayEffectContextHandle& EffectContextHandle)
 {
 	if (const auto* AueaEffectContext = static_cast<const FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
-	{
 		return AueaEffectContext->IsCriticalHit();
-	}
 
 	return false;
+}
+
+bool UAueaAbilitySystemLibrary::IsSuccessfulDebuff(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const auto* AueaEffectContext = static_cast<const FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+		return AueaEffectContext->IsSuccessfulDebuff();
+
+	return false;
+}
+
+float UAueaAbilitySystemLibrary::GetDebuffDamage(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const auto* AueaEffectContext = static_cast<const FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+		return AueaEffectContext->GetDebuffDamage();
+
+	return 0.f;
+}
+
+float UAueaAbilitySystemLibrary::GetDebuffFrequency(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const auto* AueaEffectContext = static_cast<const FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+		return AueaEffectContext->GetDebuffFrequency();
+
+	return 0.f;
+}
+
+float UAueaAbilitySystemLibrary::GetDebuffDuration(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const auto* AueaEffectContext = static_cast<const FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+		return AueaEffectContext->GetDebuffDuration();
+
+	return 0.f;
+}
+
+FGameplayTag UAueaAbilitySystemLibrary::GetDamageType(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const auto* AueaEffectContext = static_cast<const FAueaGameplayEffectContext*>(EffectContextHandle.Get()); AueaEffectContext->GetDamageType().IsValid())
+		return *AueaEffectContext->GetDamageType();
+
+	return FGameplayTag();
+}
+
+void UAueaAbilitySystemLibrary::SetIsBlockedHit(UPARAM(ref)FGameplayEffectContextHandle& EffectContextHandle, bool bInIsBlockedHit)
+{
+	if (auto* AuraEffectContext = static_cast<FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+		AuraEffectContext->SetIsBlockedHit(bInIsBlockedHit);
+}
+
+void UAueaAbilitySystemLibrary::SetIsCriticalHit(UPARAM(ref)FGameplayEffectContextHandle& EffectContextHandle, bool bInIsCriticalHit)
+{
+	if (auto* AuraEffectContext = static_cast<FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+		AuraEffectContext->SetIsCriticalHit(bInIsCriticalHit);
+}
+
+void UAueaAbilitySystemLibrary::SetIsSuccessfulDebuff(UPARAM(ref)FGameplayEffectContextHandle& EffectContextHandle, bool bInSuccessfulDebuff)
+{
+	if (auto* AuraEffectContext = static_cast<FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+		AuraEffectContext->SetIsSuccessfulDebuff(bInSuccessfulDebuff);
+}
+
+void UAueaAbilitySystemLibrary::SetDebuffDamage(UPARAM(ref)FGameplayEffectContextHandle& EffectContextHandle, float InDebuffDamage)
+{
+	if (auto* AuraEffectContext = static_cast<FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+		AuraEffectContext->SetDebuffDamage(InDebuffDamage);
+}
+
+void UAueaAbilitySystemLibrary::SetDebuffFrequency(UPARAM(ref)FGameplayEffectContextHandle& EffectContextHandle, float InDebuffFrequency)
+{
+	if (auto* AuraEffectContext = static_cast<FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+		AuraEffectContext->SetDebuffDamage(InDebuffFrequency);
+}
+
+void UAueaAbilitySystemLibrary::SetDebuffDuration(UPARAM(ref)FGameplayEffectContextHandle& EffectContextHandle, float InDebuffDuration)
+{
+	if (auto* AuraEffectContext = static_cast<FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+		AuraEffectContext->SetDebuffDamage(InDebuffDuration);
+}
+
+void UAueaAbilitySystemLibrary::SetDamageType(UPARAM(ref)FGameplayEffectContextHandle& EffectContextHandle, const FGameplayTag& InDamageType)
+{
+	if (auto* AuraEffectContext = static_cast<FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		const auto DamageType = MakeShared<FGameplayTag>(InDamageType);
+		AuraEffectContext->SetDamageType(DamageType);
+	}
 }
 
 void UAueaAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldContextObject, TArray<AActor*>& OutOverlappingActors, const TArray<AActor*>& ActorsToIgnore, float Radius, const FVector& SphereOrigin)
@@ -158,9 +247,7 @@ void UAueaAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldC
 		{
 			auto TheActor = Overlap.GetActor();
 			if (TheActor->Implements<UCombatInterface>() && !ICombatInterface::Execute_IsDead(TheActor))
-			{
 				OutOverlappingActors.AddUnique(ICombatInterface::Execute_GetAvatar(TheActor));
-			}
 		}
 	}
 }
@@ -180,6 +267,25 @@ bool UAueaAbilitySystemLibrary::IsNotFriend(AActor* First, AActor* Second)
 	return !bFriends;
 }
 
+FGameplayEffectContextHandle UAueaAbilitySystemLibrary::ApplyDamageEffect(const FDamageEffectParams& DamageEffectParams)
+{
+	const auto& GameplayTags = FAueaGameplayTags::Get();
+	const auto* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor();
+	auto EffectContextHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeEffectContext();
+	EffectContextHandle.AddSourceObject(SourceAvatarActor);
+	const auto SpecHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeOutgoingSpec(DamageEffectParams.DamageGameplayEffectClass, DamageEffectParams.AbilityLevel, EffectContextHandle);
+	
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, DamageEffectParams.DamageType, DamageEffectParams.BaseDamage);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, GameplayTags.Debuff_Properties_Chance, DamageEffectParams.DebuffChance);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, GameplayTags.Debuff_Properties_Damage, DamageEffectParams.DebuffDamage);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, GameplayTags.Debuff_Properties_Frequency, DamageEffectParams.DebuffFrequency);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, GameplayTags.Debuff_Properties_Duration, DamageEffectParams.DebuffDuration);
+
+	DamageEffectParams.TargetAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
+
+	return EffectContextHandle;
+}
+
 float UAueaAbilitySystemLibrary::GetXPRewardForClassAndLevel(const UObject* WorldContextObject, ECharacterClass CharacterClass, int32 CharacterLevel)
 {
 	auto* CharacterClassInfo = GetCharacterClassInfo(WorldContextObject);
@@ -190,18 +296,14 @@ float UAueaAbilitySystemLibrary::GetXPRewardForClassAndLevel(const UObject* Worl
 	return Info.XPReward.GetValueAtLevel(CharacterLevel);
 }
 
-void UAueaAbilitySystemLibrary::SetIsBlockedHit(FGameplayEffectContextHandle& EffectContextHandle, bool bInIsBlockedHit)
-{
-	if (auto* AueaEffectContext = static_cast<FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
-	{
-		AueaEffectContext->SetIsBlockedHit(bInIsBlockedHit);
-	}
-}
-
-void UAueaAbilitySystemLibrary::SetIsCriticalHit(FGameplayEffectContextHandle& EffectContextHandle, bool bInIsCriticalHit)
-{
-	if (auto* AueaEffectContext = static_cast<FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
-	{
-		AueaEffectContext->SetIsCriticalHit(bInIsCriticalHit);
-	}
-}
+//void UAueaAbilitySystemLibrary::SetIsBlockedHit(FGameplayEffectContextHandle& EffectContextHandle, bool bInIsBlockedHit)
+//{
+//	if (auto* AueaEffectContext = static_cast<FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+//		AueaEffectContext->SetIsBlockedHit(bInIsBlockedHit);
+//}
+//
+//void UAueaAbilitySystemLibrary::SetIsCriticalHit(FGameplayEffectContextHandle& EffectContextHandle, bool bInIsCriticalHit)
+//{
+//	if (auto* AueaEffectContext = static_cast<FAueaGameplayEffectContext*>(EffectContextHandle.Get()))
+//		AueaEffectContext->SetIsCriticalHit(bInIsCriticalHit);
+//}
