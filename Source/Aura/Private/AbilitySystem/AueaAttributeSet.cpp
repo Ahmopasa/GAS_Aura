@@ -9,6 +9,7 @@
 #include <Kismet/GameplayStatics.h>
 #include <Player/AueaPlayerController.h>
 #include <AbilitySystem/AueaAbilitySystemLibrary.h>
+#include <AueaAbilityTypes.h>
 
 UAueaAttributeSet::UAueaAttributeSet()
 {
@@ -107,6 +108,9 @@ void UAueaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 
 	FEffectProperties Props; 
 	SetEffectProperties(Data, Props);
+
+	if (Props.TargetCharacter->Implements<UCombatInterface>(); ICombatInterface::Execute_IsDead(Props.TargetCharacter))
+		return;
 
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
 		SetHealth(FMath::Clamp(GetHealth(), 0.f, GetMaxHealth()));
@@ -303,7 +307,49 @@ void UAueaAttributeSet::HandleIncomingXP(const FEffectProperties& Props)
 
 void UAueaAttributeSet::Debuff(const FEffectProperties& Props)
 {
-	// TODO: 
+	const auto& GameplayTags = FAueaGameplayTags::Get();
+	auto EffectContext = Props.SourceASC->MakeEffectContext();
+	EffectContext.AddSourceObject(Props.SourceAvatarActor);
+
+	// Collect the feature of the debuff:
+	const auto DamageType = UAueaAbilitySystemLibrary::GetDamageType(Props.EffectContextHandle);
+	const auto DebuffDamage = UAueaAbilitySystemLibrary::GetDebuffDamage(Props.EffectContextHandle);
+	const auto DebuffFrequency = UAueaAbilitySystemLibrary::GetDebuffFrequency(Props.EffectContextHandle);
+	const auto DebuffDuration = UAueaAbilitySystemLibrary::GetDebuffDuration(Props.EffectContextHandle);
+	UE_LOG(
+		LogTemp, 
+		Warning, 
+		TEXT("Name: [%s], Damage: [%f], Frequency: [%f], Duration: [%f]\n"), 
+		*DamageType.GetTagName().ToString(),
+		DebuffDamage,
+		DebuffFrequency,
+		DebuffDuration
+	);
+
+	// Create and organize the debuff: 
+	auto DebuffName = FString::Printf(TEXT("DynamicDebuff_%s"), *DamageType.ToString());
+	auto Effect = NewObject<UGameplayEffect>(GetTransientPackage(), FName(DebuffName));
+	Effect->DurationPolicy = EGameplayEffectDurationType::HasDuration;
+	Effect->Period = DebuffFrequency;
+	Effect->DurationMagnitude = FScalableFloat(DebuffDuration);
+	Effect->InheritableOwnedTagsContainer.AddTag(GameplayTags.DamageTypesToDebuffs[DamageType]);
+	Effect->StackingType = EGameplayEffectStackingType::AggregateBySource;
+	Effect->StackLimitCount = 1;
+	const auto Index = Effect->Modifiers.Num();
+	Effect->Modifiers.Add(FGameplayModifierInfo());
+	auto& ModifierInfo = Effect->Modifiers[Index];
+	ModifierInfo.ModifierMagnitude = FScalableFloat(DebuffDamage);
+	ModifierInfo.ModifierOp = EGameplayModOp::Additive;
+	ModifierInfo.Attribute = UAueaAttributeSet::GetIncomingDamageAttribute();
+	
+	// Apply Debuff
+	if (auto* MutableSpec = new FGameplayEffectSpec(Effect, EffectContext, 1.f))
+	{	
+		auto* AueaContext = static_cast<FAueaGameplayEffectContext*>(EffectContext.Get());
+		TSharedPtr<FGameplayTag> DebuffDamageType = MakeShareable(new FGameplayTag(DamageType));
+		AueaContext->SetDamageType(DebuffDamageType);
+		Props.TargetASC->ApplyGameplayEffectSpecToSelf(*MutableSpec);
+	}
 }
 
 void UAueaAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const

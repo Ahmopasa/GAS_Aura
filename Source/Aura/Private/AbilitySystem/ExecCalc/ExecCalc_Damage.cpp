@@ -98,7 +98,7 @@ void UExecCalc_Damage::Execute_Implementation( const FGameplayEffectCustomExecut
 	EvaluationParameters.TargetTags = TargetTags;
 
 	// Debuff
-	DetermineDebuff(Spec, ExecutionParams, EvaluationParameters, TagsToCaptureDefs);
+	DetermineDebuff(ExecutionParams, Spec, EvaluationParameters, TagsToCaptureDefs);
 
 	// Get Damage Set by Caller Magnitude
 	float Damage = 0.f;
@@ -178,10 +178,15 @@ void UExecCalc_Damage::Execute_Implementation( const FGameplayEffectCustomExecut
 	OutExecutionOutput.AddOutputModifier(EvaluatedData);
 }
 
-void UExecCalc_Damage::DetermineDebuff(const FGameplayEffectSpec& Spec, const FGameplayEffectCustomExecutionParameters& ExecutionParams, FAggregatorEvaluateParameters& EvaluationParameters, const TMap<FGameplayTag, FGameplayEffectAttributeCaptureDefinition>& InTagsToDefs) const
+void UExecCalc_Damage::DetermineDebuff(
+	const FGameplayEffectCustomExecutionParameters& ExecutionParams, 
+	const FGameplayEffectSpec& Spec, 
+	FAggregatorEvaluateParameters EvaluationParameters, 
+	const TMap<FGameplayTag, FGameplayEffectAttributeCaptureDefinition>& InTagsToDefs
+) const
 {
 	const auto& GameplayTags = FAueaGameplayTags::Get();
-	for (const auto& Pair : GameplayTags.DamageTypesToDebuffs)
+	for (auto Pair : GameplayTags.DamageTypesToDebuffs)
 	{
 		const auto& DamageType = Pair.Key;
 		const auto& DebuffType = Pair.Value;
@@ -205,9 +210,9 @@ void UExecCalc_Damage::DetermineDebuff(const FGameplayEffectSpec& Spec, const FG
 				const auto DebuffDamage = Spec.GetSetByCallerMagnitude(GameplayTags.Debuff_Properties_Damage, false, -1.f);
 				UAueaAbilitySystemLibrary::SetDebuffDamage(ContextHandle, DebuffDamage);
 				const auto DebuffFrequency = Spec.GetSetByCallerMagnitude(GameplayTags.Debuff_Properties_Frequency, false, -1.f);
-				UAueaAbilitySystemLibrary::SetDebuffDamage(ContextHandle, DebuffFrequency);
+				UAueaAbilitySystemLibrary::SetDebuffFrequency(ContextHandle, DebuffFrequency);
 				const auto DebuffDuration = Spec.GetSetByCallerMagnitude(GameplayTags.Debuff_Properties_Duration, false, -1.f);
-				UAueaAbilitySystemLibrary::SetDebuffDamage(ContextHandle, DebuffDuration);
+				UAueaAbilitySystemLibrary::SetDebuffDuration(ContextHandle, DebuffDuration);
 			}
 		}
 	}

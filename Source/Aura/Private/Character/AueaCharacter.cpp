@@ -155,6 +155,8 @@ void AAueaCharacter::InitAbilityActorInfo()
 	Cast<UAueaAbilitySystemComponent>(AueaPlayerState->GetAbilitySystemComponent())->AbilityActorInfoSet();
 	AbilitySystemComponent = AueaPlayerState->GetAbilitySystemComponent();
 	AttributeSet = AueaPlayerState->GetAttributeSet();
+	
+	OnASCRegistered.Broadcast(AbilitySystemComponent); 
 
 	if (AAueaPlayerController* AueaPlayerController = Cast<AAueaPlayerController>(GetController())) {
 		if (AAueaHUD* AueaHUD = Cast<AAueaHUD>(AueaPlayerController->GetHUD())) {

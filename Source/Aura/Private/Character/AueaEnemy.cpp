@@ -137,6 +137,8 @@ void AAueaEnemy::InitAbilityActorInfo()
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 	Cast<UAueaAbilitySystemComponent>(AbilitySystemComponent)->AbilityActorInfoSet();
 	if (HasAuthority()) InitializeDefaultAttributes();
+
+	OnASCRegistered.Broadcast(AbilitySystemComponent);
 }
 
 void AAueaEnemy::InitializeDefaultAttributes() const

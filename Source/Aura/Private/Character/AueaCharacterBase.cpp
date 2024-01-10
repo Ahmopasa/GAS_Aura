@@ -5,12 +5,17 @@
 #include "Aura/Aura.h"
 #include "AueaGameplayTags.h"
 #include <Kismet/GameplayStatics.h>
+#include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 
 AAueaCharacterBase::AAueaCharacterBase()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	
+	BurnDebuffComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>("BurnDebuffComponent");
+	BurnDebuffComponent->SetupAttachment(GetRootComponent());
+	BurnDebuffComponent->DebuffTag = FAueaGameplayTags::Get().Debuff_Burn;
+
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetCapsuleComponent()->SetGenerateOverlapEvents(false);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
@@ -63,6 +68,8 @@ void AAueaCharacterBase::MulticastHandleDeath_Implementation()
 	Dissolve();
 
 	bDead = true;
+
+	OnDeath.Broadcast(this);
 }
 
 void AAueaCharacterBase::BeginPlay()
@@ -140,6 +147,16 @@ void AAueaCharacterBase::IncrementMinionCount_Implementation(int32 Amount)
 ECharacterClass AAueaCharacterBase::GetCharacterClass_Implementation()
 {
 	return CharacterClass;
+}
+
+FOnASCRegistered AAueaCharacterBase::GetOnASCRegisteredDelegate()
+{
+	return OnASCRegistered;
+}
+
+FOnDeath* AAueaCharacterBase::GetOnDeathDelegate()
+{
+	return &OnDeath;
 }
 
 void AAueaCharacterBase::InitAbilityActorInfo()

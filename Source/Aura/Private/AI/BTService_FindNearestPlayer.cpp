@@ -30,7 +30,6 @@ void UBTService_FindNearestPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, u
 			{
 				ClosestDistance = Distance;
 				ClosestActor = Actor;
-				UE_LOG(LogTemp, Warning, TEXT("%s has a distance of %f"), *ClosestActor->GetName(), ClosestDistance);
 			}
 		}
 	}
