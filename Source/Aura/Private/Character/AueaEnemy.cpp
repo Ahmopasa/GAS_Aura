@@ -68,13 +68,13 @@ int32 AAueaEnemy::GetPlayerLevel_Implementation()
 	return Level;
 }
 
-void AAueaEnemy::Die()
+void AAueaEnemy::Die(const FVector& DeathImpulse)
 {
 	SetLifeSpan(LifeSpan);
 
 	if (AueaAIController) AueaAIController->GetBlackboardComponent()->SetValueAsBool(FName("Dead"), true);
 
-	Super::Die();
+	Super::Die(DeathImpulse);
 }
 
 void AAueaEnemy::SetCombatTarget_Implementation(AActor* InCombatTarget)

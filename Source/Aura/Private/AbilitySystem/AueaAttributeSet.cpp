@@ -252,10 +252,13 @@ void UAueaAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 		SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
 		const bool bFatal = NewHealth <= 0.f;
 		if (bFatal)
-		{
+		{	
 			ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor);
 			if (CombatInterface)
-				CombatInterface->Die();
+			{
+				auto Impulse = UAueaAbilitySystemLibrary::GetDeathImpulse(Props.EffectContextHandle);
+				CombatInterface->Die(Impulse);
+			}
 
 			SendXPEvent(Props);
 		}
@@ -264,6 +267,12 @@ void UAueaAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 			FGameplayTagContainer TagContainer;
 			TagContainer.AddTag(FAueaGameplayTags::Get().Effects_HitReact);
 			Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
+
+			const auto& KnockbackForce = UAueaAbilitySystemLibrary::GetKnockbackForce(Props.EffectContextHandle);
+			if (!KnockbackForce.IsNearlyZero(1.f))
+			{
+				Props.TargetCharacter->LaunchCharacter(KnockbackForce, true, true);
+			}
 		}
 
 		const bool bBlock = UAueaAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle);

@@ -42,26 +42,29 @@ UAnimMontage* AAueaCharacterBase::GetHitReactMontage_Implementation()
 	return HitReactMontage;
 }
 
-void AAueaCharacterBase::Die()
+void AAueaCharacterBase::Die(const FVector& DeathImpulse)
 {
 	Weapon->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 
-	MulticastHandleDeath();
+	MulticastHandleDeath(DeathImpulse);
 }
 
 
-void AAueaCharacterBase::MulticastHandleDeath_Implementation()
+void AAueaCharacterBase::MulticastHandleDeath_Implementation(const FVector& DeathImpulse)
 {
+	UE_LOG(LogTemp, Warning, TEXT("MulticastHandleDeath_Implementation >> Impulse Magnitude: [%s]"), *DeathImpulse.ToString());
 	UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation(), GetActorRotation());
 
 	Weapon->SetSimulatePhysics(true);
 	Weapon->SetEnableGravity(true);
 	Weapon->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-
+	Weapon->AddImpulse(DeathImpulse, NAME_None, true);
+	
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetEnableGravity(true);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	GetMesh()->AddImpulse(DeathImpulse, NAME_None, true);
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 

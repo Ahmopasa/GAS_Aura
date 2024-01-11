@@ -22,9 +22,11 @@ bool FAueaGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 		if (DebuffFrequency > 0.f) RepBits |= 1 << 11;
 		if (DebuffDuration > 0.f) RepBits |= 1 << 12;
 		if (DamageType.IsValid()) RepBits |= 1 << 13;
+		if (!DeathImpulse.IsZero()) RepBits |= 1 << 14;
+		if (!KnockbackForce.IsZero()) RepBits |= 1 << 15;
 	}
 
-	Ar.SerializeBits(&RepBits, 13);
+	Ar.SerializeBits(&RepBits, 15);
 
 	if (RepBits & (1 << 0)) Ar << Instigator;
 	if (RepBits & (1 << 1)) Ar << EffectCauser;
@@ -68,6 +70,9 @@ bool FAueaGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 		}
 		DamageType->NetSerialize(Ar, Map, bOutSuccess);
 	}
+	if (RepBits & (1 << 14)) DeathImpulse.NetSerialize(Ar, Map, bOutSuccess);
+	if (RepBits & (1 << 15)) KnockbackForce.NetSerialize(Ar, Map, bOutSuccess);
+
 	// Just to initialize InstigatorAbilitySystemComponent
 	if (Ar.IsLoading()) AddInstigator(Instigator.Get(), EffectCauser.Get()); 
 

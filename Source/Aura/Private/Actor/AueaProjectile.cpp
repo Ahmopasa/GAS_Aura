@@ -68,6 +68,23 @@ void AAueaProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 	{
 		if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OtherActor))
 		{
+			// Handling Death Impulse: 
+			const auto DeathImpulse = GetActorForwardVector() * DamageEffectParams.DeathImpulseMagnitude;
+			UE_LOG(LogTemp, Warning, TEXT("OnSphereOverlap >> DamageEffectParams.DeathImpulseMagnitude's Magnitude: [%f]"), DamageEffectParams.DeathImpulseMagnitude);
+			DamageEffectParams.DeathImpulse = DeathImpulse;
+			UE_LOG(LogTemp, Warning, TEXT("OnSphereOverlap >> DamageEffectParams.DeathImpulse's Magnitude: [%s]"), *DamageEffectParams.DeathImpulse.ToString());
+
+			// Handling Knockbacking: 
+			if (FMath::RandRange(1, 100) < DamageEffectParams.KnockbackChance)
+			{
+				auto Rotation = GetActorRotation();
+				Rotation.Pitch = 45.f;
+				const auto KnockbackDirection = Rotation.Vector();
+				const auto KnockbackForce = KnockbackDirection * DamageEffectParams.KnockbackForceMagnitude;
+				DamageEffectParams.KnockbackForce = KnockbackForce;
+			}
+
+			// Applying the effects: 
 			DamageEffectParams.TargetAbilitySystemComponent = TargetASC;
 			UAueaAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);
 		}
