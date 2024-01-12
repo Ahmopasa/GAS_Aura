@@ -161,6 +161,29 @@ void FAueaGameplayTags::InitializeNativeGameplayTags()
 	);
 
 	/*
+	*	Input Tags | Block
+	*/
+
+	GameplayTags.InputTag_Block_InputPressed = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("InputTag.Block.InputPressed"),
+		FString("Block InputTag for Press callback")
+	);
+
+	GameplayTags.InputTag_Block_InputHeld = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("InputTag.Block.InputHeld"),
+		FString("Block InputTag for Held callback")
+	);
+
+	GameplayTags.InputTag_Block_InputReleased = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("InputTag.Block.InputReleased"),
+		FString("Block InputTag for Release callback")
+	);
+
+	GameplayTags.InputTag_Block_CursorTrace = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("InputTag.Block.CursorTrace"),
+		FString("Block InputTag for CursorTrace callback")
+	);
+	/*
 	*	Damage Types
 	*/
 

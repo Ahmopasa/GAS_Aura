@@ -15,6 +15,7 @@ class UAueaInputConfig;
 class UAueaAbilitySystemComponent;
 class USplineComponent;
 class UDamageTextComponent;
+class UNiagaraSystem;
 
 UCLASS()
 class AURA_API AAueaPlayerController : public APlayerController
@@ -48,8 +49,8 @@ private:
 	FHitResult CursorHit;
 
 	void AbilityInputTagPressed(FGameplayTag InputTag);
-	void AbilityInputTagReleased(FGameplayTag InputTag);
 	void AbilityInputTagHold(FGameplayTag InputTag);
+	void AbilityInputTagReleased(FGameplayTag InputTag);
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UAueaInputConfig> InputConfig;
 
@@ -68,6 +69,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USplineComponent> Spline;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UNiagaraSystem> ClickNiagaraSystem; 
 
 	void AutoRun();
 

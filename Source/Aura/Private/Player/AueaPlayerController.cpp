@@ -10,6 +10,7 @@
 #include "NavigationPath.h"
 #include "GameFramework/Character.h"
 #include "UI/Widget/DamageTextComponent.h"
+#include <NiagaraFunctionLibrary.h>
 
 AAueaPlayerController::AAueaPlayerController()
 {
@@ -91,6 +92,9 @@ void AAueaPlayerController::SetupInputComponent()
 
 void AAueaPlayerController::Move(const FInputActionValue& InputActionValue)
 {
+	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAueaGameplayTags::Get().InputTag_Block_InputPressed))
+		return;
+
 	const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
 
 	const FRotator Rotation = GetControlRotation();
@@ -106,6 +110,16 @@ void AAueaPlayerController::Move(const FInputActionValue& InputActionValue)
 
 void AAueaPlayerController::CursorTrace()
 {
+	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAueaGameplayTags::Get().InputTag_Block_CursorTrace))
+	{
+		if (LastActor) LastActor->UnHighlightActor();
+		if (ThisActor) ThisActor->UnHighlightActor();
+		
+		ThisActor = LastActor = nullptr;
+		
+		return;
+	}
+
 	GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
 	if (!CursorHit.bBlockingHit) return; 
 
@@ -121,50 +135,23 @@ void AAueaPlayerController::CursorTrace()
 
 void AAueaPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 {
+	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAueaGameplayTags::Get().InputTag_Block_InputPressed))
+		return;
+
 	if (InputTag.MatchesTagExact(FAueaGameplayTags::Get().InputTag_LMB))
 	{
 		bTargeting = ThisActor ? true : false;
 		bAutoRunning = false;
 	}
-}
 
-void AAueaPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
-{
-	if (!InputTag.MatchesTagExact(FAueaGameplayTags::Get().InputTag_LMB))
-	{
-		if (GetASC()) GetASC()->AbilityInputTagReleased(InputTag);
-
-		return;
-	}
-	
-	if (GetASC()) GetASC()->AbilityInputTagReleased(InputTag);
-	
-	if (!bTargeting && !bShiftKeyDown)
-	{
-		const APawn* ControlledPawn = GetPawn();
-		if (ControlledPawn && FollowTime <= ShortPressThreshold)
-		{
-			if (UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(this, ControlledPawn->GetActorLocation(), CachedDestination))
-			{
-				Spline->ClearSplinePoints();
-				for (const FVector& PointLocation : NavPath->PathPoints)
-				{
-					Spline->AddSplinePoint(PointLocation, ESplineCoordinateSpace::World);
-				}
-				if (NavPath->PathPoints.Num() > 0)
-				{
-					CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];
-					bAutoRunning = true;
-				}
-			}
-		}
-		FollowTime = 0.f;
-		bTargeting = false;
-	}
+	if (GetASC()) GetASC()->AbilityInputTagPressed(InputTag);
 }
 
 void AAueaPlayerController::AbilityInputTagHold(FGameplayTag InputTag)
 {
+	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAueaGameplayTags::Get().InputTag_Block_InputHeld))
+		return;
+
 	if (!InputTag.MatchesTagExact(FAueaGameplayTags::Get().InputTag_LMB))
 	{
 		if (GetASC()) GetASC()->AbilityInputTagHeld(InputTag);
@@ -187,6 +174,50 @@ void AAueaPlayerController::AbilityInputTagHold(FGameplayTag InputTag)
 			const FVector WorldDirection = (CachedDestination - ControlledPawn->GetActorLocation()).GetSafeNormal();
 			ControlledPawn->AddMovementInput(WorldDirection);
 		}
+	}
+}
+
+void AAueaPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
+{
+	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAueaGameplayTags::Get().InputTag_Block_InputReleased))
+		return;
+
+	if (!InputTag.MatchesTagExact(FAueaGameplayTags::Get().InputTag_LMB))
+	{
+		if (GetASC()) GetASC()->AbilityInputTagReleased(InputTag);
+
+		return;
+	}
+	
+	if (GetASC()) GetASC()->AbilityInputTagReleased(InputTag);
+	
+	if (!bTargeting && !bShiftKeyDown)
+	{
+		const APawn* ControlledPawn = GetPawn();
+		if (FollowTime <= ShortPressThreshold && ControlledPawn)
+		{
+			if (UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(this, ControlledPawn->GetActorLocation(), CachedDestination))
+			{
+				Spline->ClearSplinePoints();
+				for (const FVector& PointLocation : NavPath->PathPoints)
+				{
+					Spline->AddSplinePoint(PointLocation, ESplineCoordinateSpace::World);
+				}
+				if (NavPath->PathPoints.Num() > 0)
+				{
+					CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];
+					bAutoRunning = true;
+				}
+			}
+
+			if (GetASC() && !GetASC()->HasMatchingGameplayTag(FAueaGameplayTags::Get().InputTag_Block_InputPressed))
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+					this, ClickNiagaraSystem, CachedDestination
+				);
+
+		}
+		FollowTime = 0.f;
+		bTargeting = false;
 	}
 }
 

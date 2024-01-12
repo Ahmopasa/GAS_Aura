@@ -67,6 +67,15 @@ public:
 	FGameplayTag InputTag_Passive_2;
 
 	/*
+	*	Input Tags | Block
+	*/
+
+	FGameplayTag InputTag_Block_InputPressed;
+	FGameplayTag InputTag_Block_InputHeld;
+	FGameplayTag InputTag_Block_InputReleased;
+	FGameplayTag InputTag_Block_CursorTrace;
+
+	/*
 	*	Damage Types
 	*/
 
