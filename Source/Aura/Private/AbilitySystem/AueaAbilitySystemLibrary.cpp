@@ -282,6 +282,40 @@ void UAueaAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldC
 	}
 }
 
+void UAueaAbilitySystemLibrary::GetClosestTargets(int32 MaxTargets, const TArray<AActor*>& Actors, TArray<AActor*>& OutClosestTargets, const FVector& Origin)
+{
+	if (Actors.Num() <= MaxTargets)
+	{
+		OutClosestTargets = Actors;
+		return;
+	}
+
+	TArray<AActor*> ActorsToCheck = Actors;
+	int32 NumTargetsFound = 0;
+
+	while (NumTargetsFound < MaxTargets)
+	{
+		if (ActorsToCheck.Num() == 0)
+			break;
+
+		auto ClosestDistance = TNumericLimits<double>::Max();
+		AActor* ClosestActor;
+		for (auto* PotentialTarget : ActorsToCheck)
+		{
+			const auto Distance = (PotentialTarget->GetActorLocation() - Origin).Length();
+			if (Distance < ClosestDistance)
+			{
+				ClosestDistance = Distance;
+				ClosestActor = PotentialTarget;
+			}
+		}
+
+		ActorsToCheck.Remove(ClosestActor);
+		OutClosestTargets.AddUnique(ClosestActor);
+		++NumTargetsFound;
+	}
+}
+
 bool UAueaAbilitySystemLibrary::IsNotFriend(AActor* First, AActor* Second)
 {
 	const bool bIsFirstAPlayer = First->ActorHasTag(FName("Player"));

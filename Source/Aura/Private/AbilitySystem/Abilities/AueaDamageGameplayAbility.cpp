@@ -42,6 +42,11 @@ FDamageEffectParams UAueaDamageGameplayAbility::MakeDamageEffectParamsFromClassD
 	return Params;
 }
 
+float UAueaDamageGameplayAbility::GetDamageAtLevel() const
+{
+	return Damage.GetValueAtLevel(GetAbilityLevel());
+}
+
 FTaggedMontage UAueaDamageGameplayAbility::GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages)
 {
 	if (const auto Size = TaggedMontages.Num(); Size > 0)

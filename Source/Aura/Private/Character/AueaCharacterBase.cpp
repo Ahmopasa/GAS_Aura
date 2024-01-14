@@ -73,6 +73,8 @@ void AAueaCharacterBase::MulticastHandleDeath_Implementation(const FVector& Deat
 	bDead = true;
 
 	OnDeath.Broadcast(this);
+
+	OnDeathSignatureDelegate.Broadcast(this);
 }
 
 void AAueaCharacterBase::BeginPlay()
@@ -160,6 +162,16 @@ FOnASCRegistered AAueaCharacterBase::GetOnASCRegisteredDelegate()
 FOnDeath* AAueaCharacterBase::GetOnDeathDelegate()
 {
 	return &OnDeath;
+}
+
+USkeletalMeshComponent* AAueaCharacterBase::GetWeapon_Implementation()
+{
+	return Weapon;
+}
+
+FOnDeathSignature& AAueaCharacterBase::GetOnDeathSignatureDelegate()
+{
+	return OnDeathSignatureDelegate;
 }
 
 void AAueaCharacterBase::InitAbilityActorInfo()
