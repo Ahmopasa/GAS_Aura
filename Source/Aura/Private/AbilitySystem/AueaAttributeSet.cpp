@@ -264,9 +264,12 @@ void UAueaAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 		}
 		else
 		{
-			FGameplayTagContainer TagContainer;
-			TagContainer.AddTag(FAueaGameplayTags::Get().Effects_HitReact);
-			Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
+			if (Props.TargetCharacter->Implements<UCombatInterface>() && !ICombatInterface::Execute_IsBeingShocked(Props.TargetCharacter))
+			{
+				FGameplayTagContainer TagContainer;
+				TagContainer.AddTag(FAueaGameplayTags::Get().Effects_HitReact);
+				Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
+			}
 
 			const auto& KnockbackForce = UAueaAbilitySystemLibrary::GetKnockbackForce(Props.EffectContextHandle);
 			if (!KnockbackForce.IsNearlyZero(1.f))
@@ -325,15 +328,6 @@ void UAueaAttributeSet::Debuff(const FEffectProperties& Props)
 	const auto DebuffDamage = UAueaAbilitySystemLibrary::GetDebuffDamage(Props.EffectContextHandle);
 	const auto DebuffFrequency = UAueaAbilitySystemLibrary::GetDebuffFrequency(Props.EffectContextHandle);
 	const auto DebuffDuration = UAueaAbilitySystemLibrary::GetDebuffDuration(Props.EffectContextHandle);
-	UE_LOG(
-		LogTemp, 
-		Warning, 
-		TEXT("Name: [%s], Damage: [%f], Frequency: [%f], Duration: [%f]\n"), 
-		*DamageType.GetTagName().ToString(),
-		DebuffDamage,
-		DebuffFrequency,
-		DebuffDuration
-	);
 
 	// Create and organize the debuff: 
 	auto DebuffName = FString::Printf(TEXT("DynamicDebuff_%s"), *DamageType.ToString());
@@ -341,7 +335,15 @@ void UAueaAttributeSet::Debuff(const FEffectProperties& Props)
 	Effect->DurationPolicy = EGameplayEffectDurationType::HasDuration;
 	Effect->Period = DebuffFrequency;
 	Effect->DurationMagnitude = FScalableFloat(DebuffDuration);
-	Effect->InheritableOwnedTagsContainer.AddTag(GameplayTags.DamageTypesToDebuffs[DamageType]);
+	const auto DebuffTag = GameplayTags.DamageTypesToDebuffs[DamageType];
+	Effect->InheritableOwnedTagsContainer.AddTag(DebuffTag);
+	if (DebuffTag.MatchesTagExact(GameplayTags.Debuff_Stun))
+	{
+		Effect->InheritableOwnedTagsContainer.AddTag(GameplayTags.InputTag_Block_CursorTrace);
+		Effect->InheritableOwnedTagsContainer.AddTag(GameplayTags.InputTag_Block_InputPressed);
+		Effect->InheritableOwnedTagsContainer.AddTag(GameplayTags.InputTag_Block_InputHeld);
+		Effect->InheritableOwnedTagsContainer.AddTag(GameplayTags.InputTag_Block_InputReleased);
+	}
 	Effect->StackingType = EGameplayEffectStackingType::AggregateBySource;
 	Effect->StackLimitCount = 1;
 	const auto Index = Effect->Modifiers.Num();

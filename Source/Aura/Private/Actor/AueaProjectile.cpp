@@ -36,7 +36,8 @@ void AAueaProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	SetLifeSpan(LifeSpan);
-	
+	SetReplicateMovement(true);
+
 	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AAueaProjectile::OnSphereOverlap);
 
 	LoopingSoundComponent = UGameplayStatics::SpawnSoundAttached(LoopingSound, GetRootComponent());
@@ -70,6 +71,7 @@ void AAueaProjectile::OnHit()
 
 void AAueaProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (DamageEffectParams.SourceAbilitySystemComponent == nullptr) return;
 	auto* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor();
 	if (SourceAvatarActor == OtherActor) return;
 	if (!UAueaAbilitySystemLibrary::IsNotFriend(SourceAvatarActor, OtherActor)) return;

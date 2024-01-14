@@ -7,12 +7,12 @@
 #include "AbilitySystem/AueaAbilitySystemLibrary.h"
 #include "Aura/Aura.h"
 #include "Components/WidgetComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "UI/Widget/AueaUserWidget.h"
 #include "AueaGameplayTags.h"
 #include "AI/AueaAIController.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 AAueaEnemy::AAueaEnemy()
 {
@@ -31,6 +31,8 @@ AAueaEnemy::AAueaEnemy()
 
 	HealthBar = CreateDefaultSubobject<UWidgetComponent>("HealthBar");
 	HealthBar->SetupAttachment(GetRootComponent());
+
+	BaseWalkSpeed = 250.f;
 }
 
 void AAueaEnemy::PossessedBy(AController* NewController)
@@ -136,6 +138,15 @@ void AAueaEnemy::InitAbilityActorInfo()
 {
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 	Cast<UAueaAbilitySystemComponent>(AbilitySystemComponent)->AbilityActorInfoSet();
+
+	AbilitySystemComponent->RegisterGameplayTagEvent(
+		FAueaGameplayTags::Get().Debuff_Stun,
+		EGameplayTagEventType::NewOrRemoved
+	).AddUObject(
+		this,
+		&AAueaEnemy::StunTagChanged
+	);
+	
 	if (HasAuthority()) InitializeDefaultAttributes();
 
 	OnASCRegistered.Broadcast(AbilitySystemComponent);
@@ -144,4 +155,14 @@ void AAueaEnemy::InitAbilityActorInfo()
 void AAueaEnemy::InitializeDefaultAttributes() const
 {
 	UAueaAbilitySystemLibrary::InitializeDefaultAttributes(this, CharacterClass, Level, AbilitySystemComponent);
+}
+
+void AAueaEnemy::StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	Super::StunTagChanged(CallbackTag, NewCount);
+
+	if (AueaAIController && AueaAIController->GetBlackboardComponent())
+	{
+		AueaAIController->GetBlackboardComponent()->SetValueAsBool(FName("Stunned"), bIsStunned);
+	}
 }

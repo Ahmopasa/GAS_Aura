@@ -6,6 +6,8 @@
 #include "AueaGameplayTags.h"
 #include <Kismet/GameplayStatics.h>
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include <Net/UnrealNetwork.h>
 
 AAueaCharacterBase::AAueaCharacterBase()
 {
@@ -16,6 +18,10 @@ AAueaCharacterBase::AAueaCharacterBase()
 	BurnDebuffComponent->SetupAttachment(GetRootComponent());
 	BurnDebuffComponent->DebuffTag = FAueaGameplayTags::Get().Debuff_Burn;
 
+	StunDebuffComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>("StunDebuffComponent");
+	StunDebuffComponent->SetupAttachment(GetRootComponent());
+	StunDebuffComponent->DebuffTag = FAueaGameplayTags::Get().Debuff_Stun;
+
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetCapsuleComponent()->SetGenerateOverlapEvents(false);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
@@ -25,6 +31,15 @@ AAueaCharacterBase::AAueaCharacterBase()
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon");
 	Weapon->SetupAttachment(GetMesh(), FName("WeaponHandSocket"));
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AAueaCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AAueaCharacterBase, bIsStunned);
+	DOREPLIFETIME(AAueaCharacterBase, bIsBurned);
+	DOREPLIFETIME(AAueaCharacterBase, bIsBeingShocked);
 }
 
 UAbilitySystemComponent* AAueaCharacterBase::GetAbilitySystemComponent() const
@@ -72,15 +87,32 @@ void AAueaCharacterBase::MulticastHandleDeath_Implementation(const FVector& Deat
 
 	bDead = true;
 
-	OnDeath.Broadcast(this);
+	BurnDebuffComponent->Deactivate();
+	StunDebuffComponent->Deactivate();
 
+	OnDeath.Broadcast(this);
 	OnDeathSignatureDelegate.Broadcast(this);
+}
+
+void AAueaCharacterBase::OnRep_Stunned()
+{
+
+}
+
+void AAueaCharacterBase::OnRep_Burned()
+{
 }
 
 void AAueaCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void AAueaCharacterBase::StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	bIsStunned = NewCount > 0;
+	GetCharacterMovement()->MaxWalkSpeed = bIsStunned ? 0.f : BaseWalkSpeed;
 }
 
 FVector AAueaCharacterBase::GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag)
@@ -154,7 +186,7 @@ ECharacterClass AAueaCharacterBase::GetCharacterClass_Implementation()
 	return CharacterClass;
 }
 
-FOnASCRegistered AAueaCharacterBase::GetOnASCRegisteredDelegate()
+FOnASCRegistered& AAueaCharacterBase::GetOnASCRegisteredDelegate()
 {
 	return OnASCRegistered;
 }
@@ -172,6 +204,16 @@ USkeletalMeshComponent* AAueaCharacterBase::GetWeapon_Implementation()
 FOnDeathSignature& AAueaCharacterBase::GetOnDeathSignatureDelegate()
 {
 	return OnDeathSignatureDelegate;
+}
+
+bool AAueaCharacterBase::IsBeingShocked_Implementation() const
+{
+	return bIsBeingShocked;
+}
+
+void AAueaCharacterBase::SetIsBeingShocked_Implementation(bool bInShock)
+{
+	bIsBeingShocked = bInShock;
 }
 
 void AAueaCharacterBase::InitAbilityActorInfo()

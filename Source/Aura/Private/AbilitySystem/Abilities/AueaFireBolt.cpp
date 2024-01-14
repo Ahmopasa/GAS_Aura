@@ -133,7 +133,4 @@ void UAueaFireBolt::SpawnProjectiles(const FVector& ProjectileTargetLocation, co
 
 		Projectile->FinishSpawning(SpawnTransform);
 	}
-
-
-
 }

@@ -9,6 +9,8 @@
 #include "UI/HUD/AueaHUD.h"
 #include <NiagaraComponent.h>
 #include "Camera/CameraComponent.h"
+#include <AueaGameplayTags.h>
+#include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 
 AAueaCharacter::AAueaCharacter()
 {
@@ -147,6 +149,41 @@ int32 AAueaCharacter::GetPlayerLevel_Implementation()
 	return AueaPlayerState->GetPlayerLevel();
 }
 
+void AAueaCharacter::OnRep_Stunned()
+{
+	if (auto* AueaASC = Cast<UAueaAbilitySystemComponent>(AbilitySystemComponent))
+	{
+		const auto& GameplayTags = FAueaGameplayTags::Get();
+		FGameplayTagContainer BlockedTags;
+		BlockedTags.AddTag(GameplayTags.InputTag_Block_CursorTrace);
+		BlockedTags.AddTag(GameplayTags.InputTag_Block_InputPressed);
+		BlockedTags.AddTag(GameplayTags.InputTag_Block_InputHeld);
+		BlockedTags.AddTag(GameplayTags.InputTag_Block_InputReleased);
+		if (bIsStunned)
+		{
+			AueaASC->AddLooseGameplayTags(BlockedTags);
+			StunDebuffComponent->Activate();
+		}
+		else
+		{
+			AueaASC->RemoveLooseGameplayTags(BlockedTags);
+			StunDebuffComponent->Deactivate();
+		}
+	}
+}
+
+void AAueaCharacter::OnRep_Burned()
+{
+	if (bIsBurned)
+	{
+		BurnDebuffComponent->Activate();
+	}
+	else
+	{
+		BurnDebuffComponent->Deactivate();
+	}
+}
+
 void AAueaCharacter::InitAbilityActorInfo()
 {
 	AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
@@ -157,6 +194,14 @@ void AAueaCharacter::InitAbilityActorInfo()
 	AttributeSet = AueaPlayerState->GetAttributeSet();
 	
 	OnASCRegistered.Broadcast(AbilitySystemComponent); 
+
+	AbilitySystemComponent->RegisterGameplayTagEvent(
+		FAueaGameplayTags::Get().Debuff_Stun, 
+		EGameplayTagEventType::NewOrRemoved
+	).AddUObject(
+		this,
+		&AAueaCharacter::StunTagChanged
+	);
 
 	if (AAueaPlayerController* AueaPlayerController = Cast<AAueaPlayerController>(GetController())) {
 		if (AAueaHUD* AueaHUD = Cast<AAueaHUD>(AueaPlayerController->GetHUD())) {
