@@ -337,16 +337,6 @@ void UAueaAbilitySystemComponent::ServerEquipAbility_Implementation(const FGamep
 			AssignSlotToAbility(*AbilitySpec, Slot);
 
 			MarkAbilitySpecDirty(*AbilitySpec);
-			// DO NO DELETE YET
-			//ClearAbilitiesOfSlot(Slot);
-			//ClearSlot(AbilitySpec);
-			//AbilitySpec->DynamicAbilityTags.AddTag(Slot);
-			//if (Status.MatchesTagExact(GameplayTags.Abilities_Status_Unlocked))
-			//{
-			//	AbilitySpec->DynamicAbilityTags.RemoveTag(GameplayTags.Abilities_Status_Unlocked);
-			//	AbilitySpec->DynamicAbilityTags.AddTag(GameplayTags.Abilities_Status_Equipped);
-			//}
-
 
 		}
 

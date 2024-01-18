@@ -100,6 +100,10 @@ void UExecCalc_Damage::Execute_Implementation( const FGameplayEffectCustomExecut
 	// Debuff
 	DetermineDebuff(ExecutionParams, Spec, EvaluationParameters, TagsToCaptureDefs);
 
+
+	// Buffs
+	 
+	
 	// Get Damage Set by Caller Magnitude
 	float Damage = 0.f;
 	for (const auto& Pair: FAueaGameplayTags::Get().DamageTypesToResistances)
@@ -166,13 +170,6 @@ void UExecCalc_Damage::Execute_Implementation( const FGameplayEffectCustomExecut
 	UAueaAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, bCriticalHit);
 
 	Damage = bCriticalHit ? Damage * 2.f + SourceCriticalHitDamage : Damage;
-
-	GEngine->AddOnScreenDebugMessage(
-		3, 
-		15.0f, 
-		FColor::Red, 
-		FString::Printf(TEXT("ExecCalc_Damage: %f"), Damage)
-	);
 	
 	const FGameplayModifierEvaluatedData EvaluatedData(UAueaAttributeSet::GetIncomingDamageAttribute(), EGameplayModOp::Additive, Damage);
 	OutExecutionOutput.AddOutputModifier(EvaluatedData);

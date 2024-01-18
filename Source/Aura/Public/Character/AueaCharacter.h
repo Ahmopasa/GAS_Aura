@@ -47,13 +47,12 @@ public:
 
 	virtual void OnRep_Burned() override;
 
-private:
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UCameraComponent> TopDownCameraComponent;
 
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<USpringArmComponent> CameraBoom; 
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<USpringArmComponent> CameraBoom;
+private:
 	virtual void InitAbilityActorInfo() override;
 
 	UFUNCTION(NetMulticast, Reliable)
