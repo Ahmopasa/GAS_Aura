@@ -300,17 +300,23 @@ void UAueaAttributeSet::HandleIncomingXP(const FEffectProperties& Props)
 		const auto NumLevelUps = NewLevel - CurrentLevel;
 		if (NumLevelUps > 0)
 		{
-			const auto AttributePointsReward = IPlayerInterface::Execute_GetAttributePointsReward(Props.SourceCharacter, CurrentLevel);
-			IPlayerInterface::Execute_AddToAttributePoints(Props.SourceCharacter, AttributePointsReward);
-
-			const auto SpellPointsReward = IPlayerInterface::Execute_GetSpellPointsReward(Props.SourceCharacter, CurrentLevel);
-			IPlayerInterface::Execute_AddToSpellPoints(Props.SourceCharacter, SpellPointsReward);
-
 			IPlayerInterface::Execute_AddToPlayerLevel(Props.SourceCharacter, NumLevelUps);
-			IPlayerInterface::Execute_LevelUp(Props.SourceCharacter);
+			
+			auto AttributePointsReward = 0;
+			auto SpellPointsReward = 0;
+			for (int32 i = 0; i < NumLevelUps; ++i)
+			{
+				SpellPointsReward += IPlayerInterface::Execute_GetSpellPointsReward(Props.SourceCharacter, CurrentLevel + i);
+				AttributePointsReward += IPlayerInterface::Execute_GetAttributePointsReward(Props.SourceCharacter, CurrentLevel + i);
+			}
+			
+			IPlayerInterface::Execute_AddToAttributePoints(Props.SourceCharacter, AttributePointsReward);
+			IPlayerInterface::Execute_AddToSpellPoints(Props.SourceCharacter, SpellPointsReward);
 
 			bTopOffHealth = true;
 			bTopOffMana = true;
+
+			IPlayerInterface::Execute_LevelUp(Props.SourceCharacter);
 		}
 
 		IPlayerInterface::Execute_AddToXP(Props.SourceCharacter, LocalIncomingXP);

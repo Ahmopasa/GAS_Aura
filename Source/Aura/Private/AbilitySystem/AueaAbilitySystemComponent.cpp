@@ -43,12 +43,65 @@ FGameplayTag UAueaAbilitySystemComponent::GetStatusFromAbilityTag(const FGamepla
 	return FGameplayTag();
 }
 
-FGameplayTag UAueaAbilitySystemComponent::GetInputTagFromAbilityTag(const FGameplayTag& AbilityTag)
+FGameplayTag UAueaAbilitySystemComponent::GetSlotFromAbilityTag(const FGameplayTag& AbilityTag)
 {
 	if (const auto Spec = GetSpecFromAbilityTag(AbilityTag))
 		return GetInputTagFromSpec(*Spec);
 
 	return FGameplayTag();
+}
+
+bool UAueaAbilitySystemComponent::IsSlotEmpty(const FGameplayTag& Slot)
+{
+	FScopedAbilityListLock ActiveScopeLock(*this);
+
+	for (auto& AbilitySpec : GetActivatableAbilities())
+		if (HasAbilitySlot(AbilitySpec, Slot))
+			return false;
+
+	return true;
+}
+
+bool UAueaAbilitySystemComponent::HasAbilitySlot(const FGameplayAbilitySpec& Spec, const FGameplayTag& Slot)
+{
+	return Spec.DynamicAbilityTags.HasTagExact(Slot);
+}
+
+bool UAueaAbilitySystemComponent::HasAnyAbilitySlot(const FGameplayAbilitySpec& Spec)
+{
+	return Spec.DynamicAbilityTags.HasTag(FGameplayTag::RequestGameplayTag(FName("InputTag")));
+}
+
+FGameplayAbilitySpec* UAueaAbilitySystemComponent::GetSpecWithSlot(const FGameplayTag& Slot)
+{
+	FScopedAbilityListLock ActiveScopeLock(*this);
+
+	for (auto& AbilitySpec : GetActivatableAbilities())
+		if (AbilitySpec.DynamicAbilityTags.HasTagExact(Slot))
+			return &AbilitySpec;
+
+	return nullptr;
+}
+
+bool UAueaAbilitySystemComponent::IsPassiveAbility(const FGameplayAbilitySpec& Spec) const
+{
+	const auto* AbilityInfo = UAueaAbilitySystemLibrary::GetAbilityInfo(GetAvatarActor());
+	const auto AbilityTag = GetAbilityTagFromSpec(Spec);
+	const auto& Info = AbilityInfo->FindAbilityInfoForTag(AbilityTag);
+	const auto AbilityType = Info.AbilityType;
+	return AbilityType.MatchesTagExact(FAueaGameplayTags::Get().Abilities_Type_Passive);
+}
+
+void UAueaAbilitySystemComponent::AssignSlotToAbility(FGameplayAbilitySpec& Spec, const FGameplayTag& Slot)
+{
+	ClearSlot(&Spec);
+
+	Spec.DynamicAbilityTags.AddTag(Slot);
+}
+
+void UAueaAbilitySystemComponent::MulticastActivatePassiveEffect_Implementation(const FGameplayTag& AbilityTag, bool bActivate)
+{
+	ActivatePassiveEffect.Broadcast(AbilityTag, bActivate);
 }
 
 FGameplayAbilitySpec* UAueaAbilitySystemComponent::GetSpecFromAbilityTag(const FGameplayTag& AbilityTag)
@@ -101,6 +154,8 @@ void UAueaAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& Inp
 {
 	if (!InputTag.IsValid()) return;
 
+	FScopedAbilityListLock ActiveScopeLock(*this);
+
 	for (auto& AbilitySpec : GetActivatableAbilities())
 	{
 		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))
@@ -123,6 +178,8 @@ void UAueaAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InputT
 {
 	if (!InputTag.IsValid()) return;
 
+	FScopedAbilityListLock ActiveScopeLock(*this);
+
 	for (auto& AbilitySpec : GetActivatableAbilities())
 	{
 		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))
@@ -140,6 +197,8 @@ void UAueaAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InputT
 void UAueaAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& InputTag)
 {
 	if (!InputTag.IsValid()) return;
+
+	FScopedAbilityListLock ActiveScopeLock(*this);
 
 	for (auto& AbilitySpec : GetActivatableAbilities())
 	{
@@ -242,22 +301,60 @@ void UAueaAbilitySystemComponent::ServerEquipAbility_Implementation(const FGamep
 		const auto bStatusValid = Status == GameplayTags.Abilities_Status_Equipped || Status == GameplayTags.Abilities_Status_Unlocked;
 		if (bStatusValid)
 		{
-			ClearAbilitiesOfSlot(Slot);
-			ClearSlot(AbilitySpec);
-			AbilitySpec->DynamicAbilityTags.AddTag(Slot);
-			if (Status.MatchesTagExact(GameplayTags.Abilities_Status_Unlocked))
+			// Handle the activation/deactivation for passive abilities:
+			if (!IsSlotEmpty(Slot))
 			{
-				AbilitySpec->DynamicAbilityTags.RemoveTag(GameplayTags.Abilities_Status_Unlocked);
-				AbilitySpec->DynamicAbilityTags.AddTag(GameplayTags.Abilities_Status_Equipped);
+				auto* SpecWithSlot = GetSpecWithSlot(Slot);
+				if (SpecWithSlot)
+				{
+					// Check if that ability same as this ability:  
+					if (AbilityTag.MatchesTagExact(GetAbilityTagFromSpec(*SpecWithSlot)))
+					{
+						ClientEquipAbility(AbilityTag, GameplayTags.Abilities_Status_Equipped, Slot, PrevSlot);
+						return; 
+					}
+
+					if (IsPassiveAbility(*SpecWithSlot))
+					{
+						MulticastActivatePassiveEffect(GetAbilityTagFromSpec(*SpecWithSlot), false);
+						DeactivatePassiveAbility.Broadcast(GetAbilityTagFromSpec(*SpecWithSlot));
+					}
+
+					ClearSlot(SpecWithSlot);
+				}
 			}
+
+			// Check if the ability is active or not: 
+			if (!HasAnyAbilitySlot(*AbilitySpec))
+			{
+				if (IsPassiveAbility(*AbilitySpec))
+				{
+					TryActivateAbility(AbilitySpec->Handle);
+					MulticastActivatePassiveEffect(AbilityTag, true);
+				}
+			}
+
+			AssignSlotToAbility(*AbilitySpec, Slot);
+
 			MarkAbilitySpecDirty(*AbilitySpec);
+			// DO NO DELETE YET
+			//ClearAbilitiesOfSlot(Slot);
+			//ClearSlot(AbilitySpec);
+			//AbilitySpec->DynamicAbilityTags.AddTag(Slot);
+			//if (Status.MatchesTagExact(GameplayTags.Abilities_Status_Unlocked))
+			//{
+			//	AbilitySpec->DynamicAbilityTags.RemoveTag(GameplayTags.Abilities_Status_Unlocked);
+			//	AbilitySpec->DynamicAbilityTags.AddTag(GameplayTags.Abilities_Status_Equipped);
+			//}
+
+
 		}
 
 		ClientEquipAbility(AbilityTag, GameplayTags.Abilities_Status_Equipped, Slot, PrevSlot);
 	}
 }
 
-void UAueaAbilitySystemComponent::ClientEquipAbility(const FGameplayTag& AbilityTag, const FGameplayTag& Status, const FGameplayTag& Slot, const FGameplayTag& PreviousSlot)
+void UAueaAbilitySystemComponent::ClientEquipAbility_Implementation(const FGameplayTag& AbilityTag, const FGameplayTag& Status, const FGameplayTag& Slot, const FGameplayTag& PreviousSlot)
 {
 	AbilityEquipped.Broadcast(AbilityTag, Status, Slot, PreviousSlot);
 }
@@ -288,7 +385,6 @@ void UAueaAbilitySystemComponent::ClearSlot(FGameplayAbilitySpec* Spec)
 {
 	const auto Slot = GetInputTagFromSpec(*Spec);
 	Spec->DynamicAbilityTags.RemoveTag(Slot);
-	MarkAbilitySpecDirty(*Spec);
 }
 
 void UAueaAbilitySystemComponent::ClearAbilitiesOfSlot(const FGameplayTag& Slot)

@@ -144,6 +144,14 @@ public:
 	FGameplayTag Abilities_Lighting_LightingBolt;
 
 	/*
+	*	Abilities | Passive
+	*/
+
+	FGameplayTag Abilities_Passive_HaloOfProtection;
+	FGameplayTag Abilities_Passive_LifeSiphon;
+	FGameplayTag Abilities_Passive_ManaSiphon;
+	
+	/*
 	*	Cooldown | Fire
 	*/
 

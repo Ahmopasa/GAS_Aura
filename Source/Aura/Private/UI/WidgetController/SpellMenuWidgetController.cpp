@@ -119,7 +119,7 @@ void USpellMenuWidgetController::EquipButtonPressed()
 	const auto SelectedStatus = GetAueaASC()->GetStatusFromAbilityTag(SelectedAbility.Ability);
 	if (SelectedStatus.MatchesTagExact(FAueaGameplayTags::Get().Abilities_Status_Equipped))
 	{
-		SelectedSlot = GetAueaASC()->GetInputTagFromAbilityTag(SelectedAbility.Ability);
+		SelectedSlot = GetAueaASC()->GetSlotFromAbilityTag(SelectedAbility.Ability);
 	}
 }
 

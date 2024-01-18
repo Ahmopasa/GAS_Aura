@@ -8,11 +8,12 @@
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include <Net/UnrealNetwork.h>
+#include <AbilitySystem/Passive/PassiveNiagaraComponent.h>
 
 AAueaCharacterBase::AAueaCharacterBase()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	
 	BurnDebuffComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>("BurnDebuffComponent");
 	BurnDebuffComponent->SetupAttachment(GetRootComponent());
@@ -31,6 +32,22 @@ AAueaCharacterBase::AAueaCharacterBase()
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon");
 	Weapon->SetupAttachment(GetMesh(), FName("WeaponHandSocket"));
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	EffectAttachComponent = CreateDefaultSubobject<USceneComponent>("EffectAttachPoint");
+	EffectAttachComponent->SetupAttachment(GetRootComponent());
+	HaloOfProtectionNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>("HaloOfProtectionComponent");
+	HaloOfProtectionNiagaraComponent->SetupAttachment(GetRootComponent());
+	LifeSiphonNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>("LifeSiphonComponent");
+	LifeSiphonNiagaraComponent->SetupAttachment(GetRootComponent());
+	ManaSiphonNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>("ManaSiphonComponent");
+	ManaSiphonNiagaraComponent->SetupAttachment(GetRootComponent());
+}
+
+void AAueaCharacterBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	EffectAttachComponent->SetWorldRotation(FRotator::ZeroRotator);
 }
 
 void AAueaCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -101,6 +118,7 @@ void AAueaCharacterBase::OnRep_Stunned()
 
 void AAueaCharacterBase::OnRep_Burned()
 {
+
 }
 
 void AAueaCharacterBase::BeginPlay()

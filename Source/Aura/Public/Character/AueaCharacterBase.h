@@ -23,6 +23,7 @@ class AURA_API AAueaCharacterBase : public ACharacter, public IAbilitySystemInte
 
 public:
 	AAueaCharacterBase();
+	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override; 
 	UAttributeSet* GetAttributeSet() const; 
@@ -157,5 +158,12 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TObjectPtr<UAnimMontage> HitReactMontage;
 
-
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> EffectAttachComponent;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UPassiveNiagaraComponent> HaloOfProtectionNiagaraComponent;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UPassiveNiagaraComponent> LifeSiphonNiagaraComponent;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UPassiveNiagaraComponent> ManaSiphonNiagaraComponent;
 };
