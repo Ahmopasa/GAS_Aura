@@ -144,6 +144,12 @@ public:
 	FGameplayTag Abilities_Lighting_LightingBolt;
 
 	/*
+	*	Abilities | Arcane
+	*/
+
+	FGameplayTag Abilities_Arcane_ArcaneShards;
+
+	/*
 	*	Abilities | Passive
 	*/
 

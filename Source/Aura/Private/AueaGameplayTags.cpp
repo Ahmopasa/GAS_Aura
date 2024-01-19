@@ -364,6 +364,15 @@ void FAueaGameplayTags::InitializeNativeGameplayTags()
 	);
 
 	/*
+	*	Abilities | Arcane
+	*/
+
+	GameplayTags.Abilities_Arcane_ArcaneShards = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Arcane.ArcaneShards"),
+		FString("Arcane Shards Ability Tag")
+	);
+
+	/*
 	*	Abilities | Passive
 	*/
 

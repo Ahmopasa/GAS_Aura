@@ -28,12 +28,14 @@ public:
 	virtual int32 GetXP_Implementation() const override;
 	virtual void AddToPlayerLevel_Implementation(int32 InPlayerLevel) override;
 	virtual void LevelUp_Implementation() override;
-	virtual int32 GetAttributePointsReward_Implementation(int32 Level)const;
-	virtual void AddToAttributePoints_Implementation(int32 InAttributePoints);
-	virtual int32 GetAttributePoints_Implementation() const;
-	virtual int32 GetSpellPointsReward_Implementation(int32 Level)const;
-	virtual void AddToSpellPoints_Implementation(int32 InSpellPoints);
-	virtual int32 GetSpellPoints_Implementation() const;
+	virtual int32 GetAttributePointsReward_Implementation(int32 Level)const override;
+	virtual void AddToAttributePoints_Implementation(int32 InAttributePoints) override;
+	virtual int32 GetAttributePoints_Implementation() const override;
+	virtual int32 GetSpellPointsReward_Implementation(int32 Level)const override;
+	virtual void AddToSpellPoints_Implementation(int32 InSpellPoints) override;
+	virtual int32 GetSpellPoints_Implementation() const override;
+	virtual void ShowMagicCircle_Implementation(UMaterialInstance* DecalMaterial) override;
+	virtual void HideMagicCircle_Implementation() override;
 	//~end Player Interface
 
 	//~begin Combat Interface

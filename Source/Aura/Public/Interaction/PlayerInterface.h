@@ -53,6 +53,10 @@ public:
 	int32 GetSpellPoints() const;
 	// ~begin Spell Points
 
-	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void ShowMagicCircle(UMaterialInstance* DecalMaterial = nullptr);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void HideMagicCircle();
 };
 

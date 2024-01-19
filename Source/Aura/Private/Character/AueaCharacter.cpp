@@ -142,6 +142,24 @@ int32 AAueaCharacter::GetSpellPoints_Implementation() const
 	return AueaPlayerState->GetSpellPoints();
 }
 
+void AAueaCharacter::ShowMagicCircle_Implementation(UMaterialInstance* DecalMaterial)
+{
+	if (auto* AueaPlayerController = Cast<AAueaPlayerController>(GetController()))
+	{
+		AueaPlayerController->ShowMagicCircle(DecalMaterial);
+		AueaPlayerController->bShowMouseCursor = false;
+	}
+}
+
+void AAueaCharacter::HideMagicCircle_Implementation()
+{
+	if (auto* AueaPlayerController = Cast<AAueaPlayerController>(GetController()))
+	{
+		AueaPlayerController->HideMagicCircle();
+		AueaPlayerController->bShowMouseCursor = true;
+	}
+}
+
 int32 AAueaCharacter::GetPlayerLevel_Implementation()
 {
 	const AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();

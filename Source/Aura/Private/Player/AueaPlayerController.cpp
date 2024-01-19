@@ -5,12 +5,14 @@
 #include "Input/AueaInputComponent.h"
 #include "Interaction/EnemyInterface.h"
 #include "Components/SplineComponent.h"
+#include "Components/DecalComponent.h"
 #include "AueaGameplayTags.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
 #include "GameFramework/Character.h"
 #include "UI/Widget/DamageTextComponent.h"
-#include <NiagaraFunctionLibrary.h>
+#include "NiagaraFunctionLibrary.h"
+#include "Actor/MagicCircle.h"
 
 AAueaPlayerController::AAueaPlayerController()
 {
@@ -30,6 +32,8 @@ void AAueaPlayerController::PlayerTick(float DeltaTime)
 	CursorTrace();
 
 	AutoRun();
+
+	UpdateMagicCircleLocation();
 }
 
 void AAueaPlayerController::ShowDamageNumber_Implementation(float DamageAmount, ACharacter* TargetCharacter, bool bBlockedHit, bool bCriticalHit)
@@ -49,6 +53,24 @@ void AAueaPlayerController::ShowDamageNumber_Implementation(float DamageAmount, 
 		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 		DamageText->SetDamageText(DamageAmount, bBlockedHit, bCriticalHit);
 	}
+}
+
+void AAueaPlayerController::ShowMagicCircle(UMaterialInterface* DecalMaterial)
+{
+	if (!IsValid(MagicCircle))
+	{
+		MagicCircle = GetWorld()->SpawnActor<AMagicCircle>(MagicCircleClass);
+		if (DecalMaterial)
+		{
+			MagicCircle->MagicCircleDecal->SetMaterial(0, DecalMaterial);
+		}
+	}
+}
+
+void AAueaPlayerController::HideMagicCircle()
+{
+	if (IsValid(MagicCircle))
+		MagicCircle->Destroy();
 }
 
 void AAueaPlayerController::BeginPlay()
@@ -248,5 +270,11 @@ void AAueaPlayerController::AutoRun()
 			bAutoRunning = false;
 		}
 	}
+}
+
+void AAueaPlayerController::UpdateMagicCircleLocation()
+{
+	if (IsValid(MagicCircle))
+		MagicCircle->SetActorLocation(CursorHit.ImpactPoint);
 }
 
