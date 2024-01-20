@@ -95,16 +95,6 @@ int32 AAueaCharacter::GetAttributePointsReward_Implementation(int32 Level) const
 	AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
 	check(AueaPlayerState);
 	return AueaPlayerState->LevelUpInfo->LevelUpInformation[Level].AttributePointAward;
-
-	//AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
-	//check(AueaPlayerState);
-	//
-	//auto PlayerLastLevel = AueaPlayerState->GetPlayerLevel();
-	//auto AttributePoints = 0;
-	//while (PlayerLastLevel-- < Level)
-	//	AttributePoints += AueaPlayerState->LevelUpInfo->LevelUpInformation[PlayerLastLevel].AttributePointAward;
-	//	
-	//return AttributePoints;
 }
 
 void AAueaCharacter::AddToAttributePoints_Implementation(int32 InAttributePoints)
