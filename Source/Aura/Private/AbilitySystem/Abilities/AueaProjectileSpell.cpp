@@ -3,6 +3,7 @@
 #include "AbilitySystemComponent.h"
 #include "Actor/AueaProjectile.h"
 #include "Interaction/CombatInterface.h"
+#include <AbilitySystem/AueaAbilitySystemComponent.h>
 
 void UAueaProjectileSpell::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
@@ -26,7 +27,6 @@ void UAueaProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 	FTransform SpawnTransform;
 	SpawnTransform.SetLocation(SocketLocation);
 	SpawnTransform.SetRotation(Rotation.Quaternion());
-
 
 	AAueaProjectile* Projectile = GetWorld()->SpawnActorDeferred<AAueaProjectile>(
 		ProjectileClass,

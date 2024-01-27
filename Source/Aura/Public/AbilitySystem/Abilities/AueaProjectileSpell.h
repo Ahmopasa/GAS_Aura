@@ -4,6 +4,7 @@
 #include "AbilitySystem/Abilities/AueaDamageGameplayAbility.h"
 #include "AueaProjectileSpell.generated.h"
 
+
 class AAueaProjectile;
 class UGameplayEffect;
 struct FGameplayTag;
@@ -13,7 +14,6 @@ class AURA_API UAueaProjectileSpell : public UAueaDamageGameplayAbility
 {
 	GENERATED_BODY()
 
-	
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
