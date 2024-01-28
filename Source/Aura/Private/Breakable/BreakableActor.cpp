@@ -1,14 +1,15 @@
 #include "Breakable/BreakableActor.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
+#include "Actor/AueaEffectActor.h"
 
 ABreakableActor::ABreakableActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	// Handling of GeometryCollection
 	GeometryCollection = CreateDefaultSubobject<UGeometryCollectionComponent>(TEXT("GeometryComponent"));
 	SetRootComponent(GeometryCollection);
 	GeometryCollection->SetGenerateOverlapEvents(true);
-
 }
 
 void ABreakableActor::BeginPlay()
@@ -16,5 +17,10 @@ void ABreakableActor::BeginPlay()
 	Super::BeginPlay();
 	
 }
+
+//AAueaEffectActor* ABreakableActor::SpawnedActor()
+//{
+//	return ActorsToSpawn[FMath::RandRange(0, ActorsToSpawn.Num())];
+//}
 
 
