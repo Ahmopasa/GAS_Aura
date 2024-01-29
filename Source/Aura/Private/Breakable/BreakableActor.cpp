@@ -18,9 +18,3 @@ void ABreakableActor::BeginPlay()
 	
 }
 
-//AAueaEffectActor* ABreakableActor::SpawnedActor()
-//{
-//	return ActorsToSpawn[FMath::RandRange(0, ActorsToSpawn.Num())];
-//}
-
-
