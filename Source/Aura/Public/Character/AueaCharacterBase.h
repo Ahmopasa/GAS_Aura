@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -8,6 +6,8 @@
 #include "Interaction/CombatInterface.h"
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "AueaCharacterBase.generated.h"
+
+
 
 class UAbilitySystemComponent;
 class UAttributeSet;
@@ -25,6 +25,7 @@ public:
 	AAueaCharacterBase();
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+	virtual float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override; 
 	UAttributeSet* GetAttributeSet() const; 
 
@@ -46,11 +47,13 @@ public:
 	virtual FOnDeathSignature& GetOnDeathSignatureDelegate() override;
 	virtual bool IsBeingShocked_Implementation() const override;
 	virtual void SetIsBeingShocked_Implementation(bool bInShock) override;
+	virtual FOnDamageSignature& GetOnDamageSignature() override;
 	//~end Combat Interface	
 	
 	FOnASCRegistered OnASCRegistered;
 	FOnDeath OnDeath;
 	FOnDeathSignature OnDeathSignatureDelegate;
+	FOnDamageSignature OnDamageDelegate;
 
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void MulticastHandleDeath(const FVector& DeathImpulse);

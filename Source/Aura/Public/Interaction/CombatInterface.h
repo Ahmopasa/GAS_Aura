@@ -6,12 +6,14 @@
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "CombatInterface.generated.h"
 
-class UAnimMontage;
 class UAbilitySystemComponent;
+class UNiagaraSystem;
+class UAnimMontage;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnASCRegistered, UAbilitySystemComponent*);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AActor*, DeadActor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeathSignature, AActor*, DeadActor);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageSignature, float /*DamageAmount*/);
 
 USTRUCT(BlueprintType)
 struct FTaggedMontage
@@ -48,6 +50,7 @@ public:
 	virtual FOnASCRegistered& GetOnASCRegisteredDelegate() = 0;
 	virtual FOnDeath* GetOnDeathDelegate() = 0;
 	virtual FOnDeathSignature& GetOnDeathSignatureDelegate() = 0;
+	virtual FOnDamageSignature& GetOnDamageSignature() = 0;
 
 	UFUNCTION(BlueprintNativeEvent)
 	int32 GetPlayerLevel();
@@ -71,7 +74,7 @@ public:
 	TArray<FTaggedMontage> GetAttackMontages();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	class UNiagaraSystem* GetBloodEffect();
+	UNiagaraSystem* GetBloodEffect();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FTaggedMontage GetTaggedMontageByTag(const FGameplayTag& MontageTag);

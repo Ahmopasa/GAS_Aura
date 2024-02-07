@@ -9,6 +9,7 @@
 #include <AbilitySystem/AueaAbilitySystemLibrary.h>
 #include <Interaction/CombatInterface.h>
 #include <AueaAbilityTypes.h>
+#include <Kismet/GameplayStatics.h>
 
 struct AueaDamageStatics
 {
@@ -93,13 +94,14 @@ void UExecCalc_Damage::Execute_Implementation( const FGameplayEffectCustomExecut
 	const auto* SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
 	const auto* TargetTags = Spec.CapturedTargetTags.GetAggregatedTags();
 	
+	auto EffectContextHandle = Spec.GetContext();
+
 	FAggregatorEvaluateParameters EvaluationParameters;
 	EvaluationParameters.SourceTags = SourceTags;
 	EvaluationParameters.TargetTags = TargetTags;
 
 	// Debuff
 	DetermineDebuff(ExecutionParams, Spec, EvaluationParameters, TagsToCaptureDefs);
-
 
 	// Buffs
 	 
@@ -117,6 +119,7 @@ void UExecCalc_Damage::Execute_Implementation( const FGameplayEffectCustomExecut
 		const auto CaptureDef = TagsToCaptureDefs[ResistanceTag];
 
 		float DamageTypeValue = Spec.GetSetByCallerMagnitude(Pair.Key, false);
+		if (DamageTypeValue <= 0.f) continue;
 
 		auto Resistance = 0.f;
 		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(CaptureDef, EvaluationParameters, Resistance);
@@ -124,17 +127,46 @@ void UExecCalc_Damage::Execute_Implementation( const FGameplayEffectCustomExecut
 
 		DamageTypeValue *= (100.f - Resistance) / 100.f;
 
+		if (UAueaAbilitySystemLibrary::IsRadialDamage(EffectContextHandle))
+		{
+			if (auto* CombatInterface = Cast<ICombatInterface>(TargetAvatar))
+			{
+				CombatInterface->GetOnDamageSignature().AddLambda(
+					[&](float DamageAmount) {
+						DamageTypeValue = DamageAmount;
+					}
+				);
+			}
+
+			UGameplayStatics::ApplyRadialDamageWithFalloff(
+				TargetAvatar,
+				DamageTypeValue,
+				0.f,
+				UAueaAbilitySystemLibrary::GetRadialDamageOrigin(EffectContextHandle),
+				UAueaAbilitySystemLibrary::GetRadialDamageInnerRadius(EffectContextHandle),
+				UAueaAbilitySystemLibrary::GetRadialDamageOuterRadius(EffectContextHandle),
+				1.f,
+				UDamageType::StaticClass(),
+				TArray<AActor*>(),
+				SourceAvatar,
+				nullptr
+			);
+		}
+
 		Damage += DamageTypeValue;
 	}
 
-	// Capture BlockChance on Target, and determine if it is successful. If Blocked, zero the damage.
+	// Capture BlockChance on Target, and determine if it is successful. 
+	// If Blocked, zero the damage.
 	float TargetBlockChance = 0.f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().BlockChanceDef, EvaluationParameters,TargetBlockChance);
 	TargetBlockChance = FMath::Max<float>(TargetBlockChance, 0.f);
 	const bool bBlocked = FMath::RandRange(1, 100) < TargetBlockChance; 
-	auto EffectContextHandle = Spec.GetContext();
+	
 	UAueaAbilitySystemLibrary::SetIsBlockedHit(EffectContextHandle, bBlocked);
+
 	Damage = bBlocked ? Damage / 2.f : Damage;
+	
 	// Capture Armor Penetration, ignores a percentage of the Target's Armor. 
 	float TargetArmor = 0.f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().ArmorDef, EvaluationParameters, TargetArmor);
@@ -151,23 +183,30 @@ void UExecCalc_Damage::Execute_Implementation( const FGameplayEffectCustomExecut
 
 	Damage *= (100 - EffectiveArmor * EffectiveArmorCoefficient) / 100.f;
 
-	// Capture Critical Hit Chance
-	float SourceCriticalHitChance = 0.f;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().CriticalHitChanceDef, EvaluationParameters, SourceCriticalHitChance);
-	SourceCriticalHitChance = FMath::Max<float>(SourceCriticalHitChance, 0.f);
+	// Capture Critical Hit Chance, Damage and Resistance
+		// Capturing Critical Hit Chance
+		float SourceCriticalHitChance = 0.f;
+		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().CriticalHitChanceDef, EvaluationParameters, SourceCriticalHitChance);
+		SourceCriticalHitChance = FMath::Max<float>(SourceCriticalHitChance, 0.f);
+	
 	// Capture Critical Hit Damage
-	float SourceCriticalHitDamage = 0.f;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().CriticalHitDamageDef, EvaluationParameters, SourceCriticalHitDamage);
-	SourceCriticalHitDamage = FMath::Max<float>(SourceCriticalHitDamage, 0.f);
+		// Capturing Critical Hit Damage
+		float SourceCriticalHitDamage = 0.f;
+		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().CriticalHitDamageDef, EvaluationParameters, SourceCriticalHitDamage);
+		SourceCriticalHitDamage = FMath::Max<float>(SourceCriticalHitDamage, 0.f);
+	
 	// Capture Critical Hit Resistance
-	float TargetCriticalHitResistance = 0.f;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().CriticalHitResistanceDef, EvaluationParameters, TargetCriticalHitResistance);
-	TargetCriticalHitResistance = FMath::Max<float>(TargetCriticalHitResistance, 0.f);
-	const auto* CriticalHitResistanceCurve = CharacterClassInfo->DamageCalculationCoefficients->FindCurve(FName("CriticalHitResistance"), FString());
-	const float CriticalHitResistanceCoefficient = CriticalHitResistanceCurve->Eval(TargetPlayerLevel);
-	const float EffectiveCriticalHitChance = SourceCriticalHitChance - TargetCriticalHitResistance * CriticalHitResistanceCoefficient;
-	const bool bCriticalHit = FMath::RandRange(1, 100) < EffectiveCriticalHitChance;
-	UAueaAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, bCriticalHit);
+		// Capturing Critical Hit Resistance
+		float TargetCriticalHitResistance = 0.f;
+		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().CriticalHitResistanceDef, EvaluationParameters, TargetCriticalHitResistance);
+		TargetCriticalHitResistance = FMath::Max<float>(TargetCriticalHitResistance, 0.f);
+	
+		// Combining Critical Hit Chance, Damage, Resistance
+		const auto* CriticalHitResistanceCurve = CharacterClassInfo->DamageCalculationCoefficients->FindCurve(FName("CriticalHitResistance"), FString());
+		const float CriticalHitResistanceCoefficient = CriticalHitResistanceCurve->Eval(TargetPlayerLevel);
+		const float EffectiveCriticalHitChance = SourceCriticalHitChance - TargetCriticalHitResistance * CriticalHitResistanceCoefficient;
+		const bool bCriticalHit = FMath::RandRange(1, 100) < EffectiveCriticalHitChance;
+		UAueaAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, bCriticalHit);
 
 	Damage = bCriticalHit ? Damage * 2.f + SourceCriticalHitDamage : Damage;
 	

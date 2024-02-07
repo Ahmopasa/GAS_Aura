@@ -59,6 +59,13 @@ void AAueaCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(AAueaCharacterBase, bIsBeingShocked);
 }
 
+float AAueaCharacterBase::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	const auto DamageTaken = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	OnDamageDelegate.Broadcast(DamageTaken);
+	return DamageTaken;
+}
+
 UAbilitySystemComponent* AAueaCharacterBase::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
@@ -232,6 +239,11 @@ bool AAueaCharacterBase::IsBeingShocked_Implementation() const
 void AAueaCharacterBase::SetIsBeingShocked_Implementation(bool bInShock)
 {
 	bIsBeingShocked = bInShock;
+}
+
+FOnDamageSignature& AAueaCharacterBase::GetOnDamageSignature()
+{
+	return OnDamageDelegate;
 }
 
 void AAueaCharacterBase::InitAbilityActorInfo()
