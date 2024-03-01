@@ -354,6 +354,11 @@ void FAueaGameplayTags::InitializeNativeGameplayTags()
 		FString("Firebolt Ability Tag")
 	);
 
+	GameplayTags.Abilities_Fire_FireBlast = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Fire.FireBlast"),
+		FString("FireBlast Ability Tag")
+	);
+
 	/*
 	*	Abilities | Lighting
 	*/

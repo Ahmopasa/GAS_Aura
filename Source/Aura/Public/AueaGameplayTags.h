@@ -136,6 +136,7 @@ public:
 	*/
 
 	FGameplayTag Abilities_Fire_Firebolt;
+	FGameplayTag Abilities_Fire_FireBlast;
 
 	/*
 	*	Abilities | Lighting
