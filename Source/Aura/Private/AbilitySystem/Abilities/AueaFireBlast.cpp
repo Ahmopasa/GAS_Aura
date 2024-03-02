@@ -99,6 +99,7 @@ TArray<AAueaFireBall*> UAueaFireBlast::SpawnFireBalls()
 		);
 
 		FireBall->DamageEffectParams = MakeDamageEffectParamsFromClassDefaults();	
+		FireBall->ReturnToActor = GetAvatarActorFromActorInfo();
 
 		FireBalls.Add(FireBall);
 
