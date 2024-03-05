@@ -1,9 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Actor/AueaFireBall.h"
 #include <AbilitySystemBlueprintLibrary.h>
 #include <AbilitySystem/AueaAbilitySystemLibrary.h>
+#include "Components/AudioComponent.h"
+#include <GameplayCueManager.h>
+#include <AueaGameplayTags.h>
 
 void AAueaFireBall::BeginPlay()
 {
@@ -29,4 +29,26 @@ void AAueaFireBall::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AA
 			UAueaAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);
 		}
 	}
+}
+
+void AAueaFireBall::OnHit()
+{
+	if (GetOwner())
+	{
+		FGameplayCueParameters CueParams;
+		CueParams.Location = GetActorLocation();
+		UGameplayCueManager::ExecuteGameplayCue_NonReplicated(
+			GetOwner(), 
+			FAueaGameplayTags::Get().GameplayCue_FireBlast, 
+			CueParams
+		);
+	}
+
+	if (LoopingSoundComponent)
+	{
+		LoopingSoundComponent->Stop();
+		LoopingSoundComponent->DestroyComponent();
+	}
+
+	bHit = true;
 }

@@ -188,6 +188,12 @@ public:
 
 	FGameplayTag Effects_HitReact;
 
+	/*
+	*	Gameplay Cue | FireBlast
+	*/
+
+	FGameplayTag GameplayCue_FireBlast;
+
 private:
 	static FAueaGameplayTags GameplayTags; 
 };

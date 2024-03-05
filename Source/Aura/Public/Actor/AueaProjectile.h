@@ -34,7 +34,7 @@ protected:
 	virtual void Destroyed() override;
 
 	UFUNCTION(BlueprintCallable)
-	void OnHit();
+	virtual void OnHit();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<USphereComponent> Sphere;
@@ -45,6 +45,9 @@ protected:
 	bool bHit = false;
 
 	bool IsValidOverlap(AActor* OtherActor);
+
+	UPROPERTY()
+	TObjectPtr<UAudioComponent> LoopingSoundComponent;
 
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -59,6 +62,5 @@ private:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<USoundBase> LoopingSound;
 
-	UPROPERTY()
-	TObjectPtr<UAudioComponent> LoopingSoundComponent;
+
 };
