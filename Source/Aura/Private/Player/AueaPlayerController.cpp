@@ -1,18 +1,20 @@
 #include "Player/AueaPlayerController.h"
 #include "AbilitySystemBlueprintLibrary.h"
-#include "AbilitySystem/AueaAbilitySystemComponent.h"
+#include "AueaGameplayTags.h"
 #include "EnhancedInputSubsystems.h"
+#include "NavigationPath.h"
+#include "NavigationSystem.h"
+#include "NiagaraFunctionLibrary.h"
+#include "AbilitySystem/AueaAbilitySystemComponent.h"
+#include "Actor/MagicCircle.h"
+#include "Aura/Aura.h"
+#include "Components/DecalComponent.h"
+#include "Components/SplineComponent.h"
 #include "Input/AueaInputComponent.h"
 #include "Interaction/EnemyInterface.h"
-#include "Components/SplineComponent.h"
-#include "Components/DecalComponent.h"
-#include "AueaGameplayTags.h"
-#include "NavigationSystem.h"
-#include "NavigationPath.h"
 #include "GameFramework/Character.h"
 #include "UI/Widget/DamageTextComponent.h"
-#include "NiagaraFunctionLibrary.h"
-#include "Actor/MagicCircle.h"
+
 
 AAueaPlayerController::AAueaPlayerController()
 {
