@@ -32,5 +32,17 @@ void ALoadScreenHUD::BeginPlay()
 
 	LoadScreenWidget->AddToViewport();
 
+	if (auto* PlayerController = Cast<APlayerController>(GetOwningPlayerController()))
+	{
+		PlayerController->SetInputMode(FInputModeUIOnly());
+		PlayerController->bShowMouseCursor = true;
+	}
+
 	LoadScreenWidget->BlueprintInitializeWidget();
+
+	/*
+	*	Load Screen | View Model
+	*/
+
+	LoadScreenViewModel->LoadData();
 }

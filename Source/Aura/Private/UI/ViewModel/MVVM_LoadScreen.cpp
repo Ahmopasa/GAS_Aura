@@ -27,7 +27,8 @@ void UMVVM_LoadScreen::NewSlotButtonPressed(int32 Slot, const FString& EnteredNa
 {
 	auto* AueaGameMode = Cast<AAueaGameModeBase>(UGameplayStatics::GetGameMode(this));
 
-	LoadSlots[Slot]->PlayerName = EnteredName;
+	LoadSlots[Slot]->SetPlayerName(EnteredName);
+	LoadSlots[Slot]->SlotStatus = Taken;
 
 	AueaGameMode->SaveSlotData(LoadSlots[Slot], Slot);
 
@@ -41,4 +42,19 @@ void UMVVM_LoadScreen::NewGameButtonPressed(int32 Slot)
 
 void UMVVM_LoadScreen::SelectSlotButtonPressed(int32 Slot)
 {
+
+}
+
+void UMVVM_LoadScreen::LoadData()
+{
+	auto* AueaGameMode = Cast<AAueaGameModeBase>(UGameplayStatics::GetGameMode(this));
+
+	for (const auto& LoadSlot : LoadSlots)
+	{
+		auto* SaveObject = AueaGameMode->GetSaveSlotData(LoadSlot.Value->LoadSlotName, LoadSlot.Key);
+	
+		LoadSlot.Value->SlotStatus = SaveObject->SaveSlotStatus;
+		LoadSlot.Value->SetPlayerName(SaveObject->PlayerName);
+		LoadSlot.Value->InitializeSlot();
+	}
 }

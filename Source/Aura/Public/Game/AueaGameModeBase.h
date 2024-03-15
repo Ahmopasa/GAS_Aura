@@ -21,6 +21,7 @@ public:
 	TObjectPtr<UAbilityInfo> AbilityInfo;
 
 	void SaveSlotData(class UMVVM_LoadSlot* LoadSlot, int32 SlotIndex);
+	class ULoadScreenSaveGame* GetSaveSlotData(const FString& SlotName, int32 SlotIndex) const;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class USaveGame> LoadScreenSavedGameClass;
