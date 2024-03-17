@@ -1,14 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "MVVMViewModelBase.h"
 #include "MVVM_LoadScreen.generated.h"
 
-/**
- * 
- */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSlotSelected);
+
 UCLASS()
 class AURA_API UMVVM_LoadScreen : public UMVVMViewModelBase
 {
@@ -16,6 +13,9 @@ class AURA_API UMVVM_LoadScreen : public UMVVMViewModelBase
 	
 public:
 	void InitializeLoadSlots();
+
+	UPROPERTY(BlueprintAssignable)
+	FSlotSelected SlotSelected;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UMVVM_LoadSlot> LoadSlotViewModelClass;
@@ -32,6 +32,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SelectSlotButtonPressed(int32 Slot);
 
+	UFUNCTION(BlueprintCallable)
+	void YesButtonPressed();
+
+	UFUNCTION(BlueprintCallable)
+	void PlayButtonPressed();
+
 	void LoadData();
 private:
 	UPROPERTY()
@@ -42,4 +48,6 @@ private:
 	TObjectPtr<UMVVM_LoadSlot> LoadSlot_1;
 	UPROPERTY()
 	TObjectPtr<UMVVM_LoadSlot> LoadSlot_2;
+	UPROPERTY()
+	UMVVM_LoadSlot* SelectedSlot; 
 };

@@ -32,6 +32,7 @@ void ALoadScreenHUD::BeginPlay()
 
 	LoadScreenWidget->AddToViewport();
 
+	// ALTERNATIVE => CONNECT "LetMouseFunctionOnly" NODE IN THE "WBP_LOADSCREEN". 
 	if (auto* PlayerController = Cast<APlayerController>(GetOwningPlayerController()))
 	{
 		PlayerController->SetInputMode(FInputModeUIOnly());
