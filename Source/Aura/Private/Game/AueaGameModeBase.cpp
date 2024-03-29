@@ -5,6 +5,8 @@
 #include "Game/LoadScreenSaveGame.h"
 #include <Kismet/GameplayStatics.h>
 #include "UI/ViewModel/MVVM_LoadSlot.h"
+#include "GameFramework/PlayerStart.h"
+#include <Game/AueaGameInstance.h>
 
 void AAueaGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
 {
@@ -18,6 +20,7 @@ void AAueaGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
 	LoadScreenSaveGame->PlayerName = LoadSlot->GetPlayerName();
 	LoadScreenSaveGame->MapName = LoadSlot->GetMapName();	
 	LoadScreenSaveGame->SaveSlotStatus = Taken;
+	LoadScreenSaveGame->PlayerStartTag = LoadSlot->PlayerStartTag;
 	UGameplayStatics::SaveGameToSlot(LoadScreenSaveGame, LoadSlot->LoadSlotName, SlotIndex);
 }
 
@@ -50,6 +53,27 @@ void AAueaGameModeBase::TravelToMap(UMVVM_LoadSlot* Slot)
 		Slot, 
 		Maps.FindChecked(Slot->GetMapName())
 	);
+}
+
+AActor* AAueaGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
+{
+	auto* AueaGameInstance = Cast<UAueaGameInstance>(GetGameInstance());
+
+	TArray<AActor*> Actors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), Actors);
+	if (Actors.Num() > 0) {
+		auto* SelectedActor = Actors[0];
+		for (auto* Actor : Actors) {
+			if (auto* PlayerStart = Cast<APlayerStart>(Actor); PlayerStart->PlayerStartTag == AueaGameInstance->PlayerStartTag) {
+				SelectedActor = PlayerStart;
+				break;
+			}
+		}
+
+		return SelectedActor;
+	}
+
+	return nullptr;
 }
 
 void AAueaGameModeBase::BeginPlay()

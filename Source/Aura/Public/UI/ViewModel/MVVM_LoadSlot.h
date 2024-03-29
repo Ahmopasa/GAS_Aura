@@ -31,6 +31,9 @@ public:
 	UPROPERTY()
 	TEnumAsByte<ESaveSlotStatus> SlotStatus;
 
+	UPROPERTY()
+	FName PlayerStartTag;
+
 	/*
 	*	FIELD NOTIFIES
 	*/ 
