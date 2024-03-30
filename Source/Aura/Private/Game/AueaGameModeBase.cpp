@@ -47,6 +47,24 @@ void AAueaGameModeBase::DeleteSlot(const FString& SlotName, int32 SlotIndex)
 	}
 }
 
+ULoadScreenSaveGame* AAueaGameModeBase::RetrieveInGameSaveData()
+{
+	auto* AueaGameInstance = Cast<UAueaGameInstance>(GetGameInstance());
+	const auto InGameLoadSlotName = AueaGameInstance->LoadSlotName;
+	const auto InGameLoadSlotIndex = AueaGameInstance->LoadSlotIndex;
+	return GetSaveSlotData(InGameLoadSlotName, InGameLoadSlotIndex);
+}
+
+void AAueaGameModeBase::SaveInGameProgressData(ULoadScreenSaveGame* SaveObject)
+{
+	auto* AueaGameInstance = Cast<UAueaGameInstance>(GetGameInstance());
+	const auto InGameLoadSlotName = AueaGameInstance->LoadSlotName;
+	const auto InGameLoadSlotIndex = AueaGameInstance->LoadSlotIndex;
+	AueaGameInstance->PlayerStartTag = SaveObject->PlayerStartTag;
+
+	UGameplayStatics::SaveGameToSlot(SaveObject, InGameLoadSlotName, InGameLoadSlotIndex);
+}
+
 void AAueaGameModeBase::TravelToMap(UMVVM_LoadSlot* Slot)
 {
 	UGameplayStatics::OpenLevelBySoftObjectPtr(

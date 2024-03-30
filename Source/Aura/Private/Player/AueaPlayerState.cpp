@@ -40,13 +40,13 @@ UAttributeSet* AAueaPlayerState::GetAttributeSet() const
 void AAueaPlayerState::AddToLevel(int32 InLevel)
 {
 	Level += InLevel;
-	OnLevelChangedDelegate.Broadcast(Level);
+	OnLevelChangedDelegate.Broadcast(Level, true);
 }
 
 void AAueaPlayerState::SetLevel(int32 InLevel)
 {
 	Level = InLevel;
-	OnLevelChangedDelegate.Broadcast(Level);
+	OnLevelChangedDelegate.Broadcast(Level, false);
 }
 
 void AAueaPlayerState::AddToXP(int32 InXP)
@@ -67,15 +67,27 @@ void AAueaPlayerState::AddToAttributePoints(int32 InPoints)
 	OnAttributePointsChangedDelegate.Broadcast(AttributePoints);
 }
 
+void AAueaPlayerState::SetAttributePoints(int32 InPoints)
+{
+	AttributePoints = InPoints;
+	OnAttributePointsChangedDelegate.Broadcast(AttributePoints);
+}
+
 void AAueaPlayerState::AddToSpellPoints(int32 InPoints)
 {
 	SpellPoints += InPoints;
 	OnSpellPointsChangedDelegate.Broadcast(SpellPoints);
 }
 
+void AAueaPlayerState::SetSpellPoints(int32 InPoints)
+{
+	SpellPoints = InPoints;
+	OnSpellPointsChangedDelegate.Broadcast(SpellPoints);
+}
+
 void AAueaPlayerState::OnRep_Level(int32 OldLevel)
 {
-	OnLevelChangedDelegate.Broadcast(Level);
+	OnLevelChangedDelegate.Broadcast(Level, true);
 }
 
 void AAueaPlayerState::OnRep_XP(int32 OldXP)

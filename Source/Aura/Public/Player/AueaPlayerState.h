@@ -12,6 +12,7 @@ class UAttributeSet;
 class ULevelUpInfo;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChanged, int32 /* Stat Value */)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnLevelChanged, int32 /* Stat Value */, bool /* bLevelUp */)
 
 UCLASS()
 class AURA_API AAueaPlayerState : public APlayerState, public IAbilitySystemInterface
@@ -25,7 +26,7 @@ public:
 	UAttributeSet* GetAttributeSet() const;
 	
 	// Player Level
-	FOnPlayerStatChanged OnLevelChangedDelegate; 
+	FOnLevelChanged OnLevelChangedDelegate;
 	FORCEINLINE int32 GetPlayerLevel() const { return Level; }
 	void AddToLevel(int32 InLevel);
 	void SetLevel(int32 InLevel);
@@ -42,11 +43,13 @@ public:
 	FOnPlayerStatChanged OnAttributePointsChangedDelegate;
 	FORCEINLINE int32 GetAttributePoints() const { return AttributePoints; }
 	void AddToAttributePoints(int32 InPoints);
+	void SetAttributePoints(int32 InPoints);
 	
 	// Player Spell Points
 	FOnPlayerStatChanged OnSpellPointsChangedDelegate;
 	FORCEINLINE int32 GetSpellPoints() const { return SpellPoints; }
 	void AddToSpellPoints(int32 InPoints);
+	void SetSpellPoints(int32 InPoints);
 
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -63,7 +66,7 @@ private:
 	void OnRep_Level(int32 OldLevel);
 
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_XP)
-	int32 XP = 1;
+	int32 XP = 0;
 
 	UFUNCTION()
 	void OnRep_XP(int32 OldXP);

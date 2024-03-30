@@ -11,6 +11,12 @@
 #include "Camera/CameraComponent.h"
 #include <AueaGameplayTags.h>
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
+#include <Game/AueaGameModeBase.h>
+#include <Game/AueaGameInstance.h>
+#include <Game/LoadScreenSaveGame.h>
+#include <Kismet/GameplayStatics.h>
+#include <AbilitySystem/AueaAttributeSet.h>
+#include <AbilitySystem/AueaAbilitySystemLibrary.h>
 
 AAueaCharacter::AAueaCharacter()
 {
@@ -43,8 +49,10 @@ AAueaCharacter::AAueaCharacter()
 void AAueaCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
+
 	InitAbilityActorInfo(); // Init ability actor info for the Server
-	AddCharacterAbilities();
+
+	LoadProgress();
 }
 
 void AAueaCharacter::OnRep_PlayerState()
@@ -150,6 +158,33 @@ void AAueaCharacter::HideMagicCircle_Implementation()
 	}
 }
 
+void AAueaCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
+{
+	auto* AueaGameMode = Cast<AAueaGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (AueaGameMode)
+	{
+		auto SaveData = AueaGameMode->RetrieveInGameSaveData();
+		if (SaveData == nullptr) return;
+
+		SaveData->PlayerStartTag = CheckpointTag;
+		if (auto* AueaPlayerState = Cast<AAueaPlayerState>(GetPlayerState()))
+		{
+			SaveData->PlayerLevel = AueaPlayerState->GetPlayerLevel();
+			SaveData->XP = AueaPlayerState->GetXP();
+			SaveData->SpellPoints = AueaPlayerState->GetSpellPoints();
+			SaveData->AttributePoints = AueaPlayerState->GetAttributePoints();
+		}
+		SaveData->Strength = UAueaAttributeSet::GetStrengthAttribute().GetNumericValue(GetAttributeSet());
+		SaveData->Intelligence = UAueaAttributeSet::GetIntelligenceAttribute().GetNumericValue(GetAttributeSet());
+		SaveData->Resilience = UAueaAttributeSet::GetResilinceAttribute().GetNumericValue(GetAttributeSet());
+		SaveData->Vigor = UAueaAttributeSet::GetVigorAttribute().GetNumericValue(GetAttributeSet());
+
+		SaveData->bFirstTimeLoading = false;
+
+		AueaGameMode->SaveInGameProgressData(SaveData);
+	}
+}
+
 int32 AAueaCharacter::GetPlayerLevel_Implementation()
 {
 	const AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
@@ -192,6 +227,38 @@ void AAueaCharacter::OnRep_Burned()
 	}
 }
 
+void AAueaCharacter::LoadProgress()
+{
+	auto* AueaGameMode = Cast<AAueaGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (AueaGameMode)
+	{
+		auto SaveData = AueaGameMode->RetrieveInGameSaveData();
+		if (SaveData == nullptr) return;
+
+		if (SaveData->bFirstTimeLoading)
+		{
+			InitializeDefaultAttributes();
+			AddCharacterAbilities();
+		}
+		else
+		{
+			if (auto* AueaPlayerState = Cast<AAueaPlayerState>(GetPlayerState()))
+			{
+				AueaPlayerState->SetLevel(SaveData->PlayerLevel);
+				AueaPlayerState->SetXP(SaveData->XP);
+				AueaPlayerState->SetSpellPoints(SaveData->SpellPoints);
+				AueaPlayerState->SetAttributePoints(SaveData->AttributePoints);
+			}
+
+			UAueaAbilitySystemLibrary::InitializeDefaultAttributesFromSaveData(
+				this, 
+				AbilitySystemComponent, 
+				SaveData
+			);
+		}
+	}
+}
+
 void AAueaCharacter::InitAbilityActorInfo()
 {
 	AAueaPlayerState* AueaPlayerState = GetPlayerState<AAueaPlayerState>();
@@ -217,7 +284,7 @@ void AAueaCharacter::InitAbilityActorInfo()
 		}
 	}
 	
-	InitializeDefaultAttributes();
+
 }
 
 void AAueaCharacter::MulticastLevelUpParticles_Implementation() const

@@ -41,6 +41,9 @@ public:
 	void SetPlayerName(FString InPlayerName);
 	FString GetPlayerName() const;
 
+	void SetPlayerLevel(int32 InPlayerLevel);
+	int32 GetPlayerLevel() const;
+
 	void SetMapName(FString InMapName);
 	FString GetMapName() const;
 
@@ -51,6 +54,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, FieldNotify, Setter, Getter, meta = (AllowPrivateAccess="true"))
 	FString PlayerName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, FieldNotify, Setter, Getter, meta = (AllowPrivateAccess = "true"))
+	int32 PlayerLevel;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, FieldNotify, Setter, Getter, meta = (AllowPrivateAccess = "true"))
 	FString MapName;

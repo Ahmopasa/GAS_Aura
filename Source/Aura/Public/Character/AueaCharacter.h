@@ -36,6 +36,7 @@ public:
 	virtual int32 GetSpellPoints_Implementation() const override;
 	virtual void ShowMagicCircle_Implementation(UMaterialInstance* DecalMaterial) override;
 	virtual void HideMagicCircle_Implementation() override;
+	virtual void SaveProgress_Implementation(const FName& CheckpointTag) override;
 	//~end Player Interface
 
 	//~begin Combat Interface
@@ -54,6 +55,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<USpringArmComponent> CameraBoom;
+
+	void LoadProgress();
 private:
 	virtual void InitAbilityActorInfo() override;
 
