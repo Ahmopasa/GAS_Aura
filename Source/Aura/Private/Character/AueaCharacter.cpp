@@ -54,6 +54,11 @@ void AAueaCharacter::PossessedBy(AController* NewController)
 	InitAbilityActorInfo(); // Init ability actor info for the Server
 
 	LoadProgress();
+
+	if (auto* AueaGameMode = Cast<AAueaGameModeBase>(UGameplayStatics::GetGameMode(this)))
+	{
+		AueaGameMode->LoadWorldState(GetWorld());
+	}
 }
 
 void AAueaCharacter::OnRep_PlayerState()

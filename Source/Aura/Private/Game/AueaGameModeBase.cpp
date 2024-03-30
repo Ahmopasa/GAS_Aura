@@ -7,6 +7,9 @@
 #include "UI/ViewModel/MVVM_LoadSlot.h"
 #include "GameFramework/PlayerStart.h"
 #include <Game/AueaGameInstance.h>
+#include "EngineUtils.h"
+#include <Interaction/SaveInterface.h>
+#include <Serialization/ObjectAndNameAsStringProxyArchive.h>
 
 void AAueaGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
 {
@@ -63,6 +66,99 @@ void AAueaGameModeBase::SaveInGameProgressData(ULoadScreenSaveGame* SaveObject)
 	AueaGameInstance->PlayerStartTag = SaveObject->PlayerStartTag;
 
 	UGameplayStatics::SaveGameToSlot(SaveObject, InGameLoadSlotName, InGameLoadSlotIndex);
+}
+
+void AAueaGameModeBase::SaveWorldState(UWorld* World) const
+{
+	auto WorldName = World->GetMapName();
+	WorldName.RemoveFromStart(World->StreamingLevelsPrefix);
+	
+	auto* AueaGI = Cast<UAueaGameInstance>(GetGameInstance());
+	check(AueaGI);
+	if (auto* SaveGame = GetSaveSlotData(AueaGI->LoadSlotName, AueaGI->LoadSlotIndex))
+	{
+		if (!SaveGame->HasMap(WorldName))
+		{
+			FSavedMap NewSavedMap;
+			NewSavedMap.MapAssetName = WorldName;
+			SaveGame->SavedMaps.Add(NewSavedMap);	 
+		}
+
+		auto SavedMap = SaveGame->GetSavedMapWithMapName(WorldName);
+		SavedMap.SavedActors.Empty(); 
+		for (FActorIterator It(World); It; ++It)
+		{
+			auto* Actor = *It;
+			if (!IsValid(Actor) || !Actor->Implements<USaveInterface>())
+				continue;
+
+			FSavedActor SavedActor;
+			SavedActor.ActorName = Actor->GetFName();
+			SavedActor.Transform = Actor->GetTransform();
+
+			FMemoryWriter MemoryWriter(SavedActor.Bytes);
+			FObjectAndNameAsStringProxyArchive Archive(MemoryWriter, true);
+			Archive.ArIsSaveGame = true;
+			Actor->Serialize(Archive);
+
+			SavedMap.SavedActors.AddUnique(SavedActor);
+		}
+
+		for (auto& MapToReplace : SaveGame->SavedMaps)
+		{
+			if (MapToReplace.MapAssetName == WorldName)
+			{
+				MapToReplace = SavedMap;
+			}
+		}
+
+		UGameplayStatics::SaveGameToSlot(SaveGame, AueaGI->LoadSlotName, AueaGI->LoadSlotIndex);
+	}
+}
+
+void AAueaGameModeBase::LoadWorldState(UWorld* World) const
+{
+	auto WorldName = World->GetMapName();
+	WorldName.RemoveFromStart(World->StreamingLevelsPrefix);
+
+	auto* AueaGI = Cast<UAueaGameInstance>(GetGameInstance());
+	check(AueaGI);
+
+	if (UGameplayStatics::DoesSaveGameExist(AueaGI->LoadSlotName, AueaGI->LoadSlotIndex))
+	{
+		auto* SaveGame = Cast<ULoadScreenSaveGame>(
+			UGameplayStatics::LoadGameFromSlot(
+				AueaGI->LoadSlotName, 
+				AueaGI->LoadSlotIndex)
+		);
+		if (SaveGame == nullptr) return;
+
+		for (FActorIterator It(World); It; ++It)
+		{
+			auto* Actor = *It;
+
+			if (!Actor->Implements<USaveInterface>())
+				continue;
+
+			for (auto SavedActor : SaveGame->GetSavedMapWithMapName(WorldName).SavedActors)
+			{
+				if (SavedActor.ActorName == Actor->GetFName())
+				{
+					if (ISaveInterface::Execute_ShouldLoadTransform(Actor))
+					{
+						Actor->SetActorTransform(SavedActor.Transform);
+					}
+
+					FMemoryReader MemoryReader(SavedActor.Bytes);
+					FObjectAndNameAsStringProxyArchive Archive(MemoryReader, true);
+					Archive.ArIsSaveGame = true;
+					Actor->Serialize(Archive);
+
+					ISaveInterface::Execute_LoadActor(Actor);
+				}
+			}
+		}
+	}
 }
 
 void AAueaGameModeBase::TravelToMap(UMVVM_LoadSlot* Slot)
