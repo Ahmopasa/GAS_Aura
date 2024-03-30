@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
+#include "GameplayTagContainer.h"
 #include "LoadScreenSaveGame.generated.h"
 
 UENUM(BlueprintType)
@@ -11,6 +12,35 @@ enum ESaveSlotStatus
 	EnterName,
 	Taken
 };
+
+USTRUCT(BlueprintType)
+struct FSavedAbility
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ClassDefaults")
+	TSubclassOf<class UGameplayAbility> GameplayAbility;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FGameplayTag AbilityTag = FGameplayTag();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FGameplayTag AbilityStatus = FGameplayTag();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FGameplayTag AbilitySlot = FGameplayTag();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FGameplayTag AbilityType = FGameplayTag();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 AbilityLevel;
+};
+
+inline bool operator==(const FSavedAbility& Left, const FSavedAbility& Right)
+{
+	return Left.AbilityTag.MatchesTagExact(Right.AbilityTag);
+}
 
 UCLASS()
 class AURA_API ULoadScreenSaveGame : public USaveGame
@@ -55,6 +85,10 @@ public:
 	UPROPERTY()
 	int32 AttributePoints = 0;
 
+	/*
+	*	Primary Attributes
+	*/
+
 	UPROPERTY()
 	float Strength = 0.f;
 
@@ -67,5 +101,10 @@ public:
 	UPROPERTY()
 	float Vigor = 0.f;
 
+	/*
+	*	Abilities
+	*/
 
+	UPROPERTY()
+	TArray<FSavedAbility> SavedAbilities;
 };

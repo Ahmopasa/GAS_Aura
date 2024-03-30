@@ -1,22 +1,23 @@
-#include "Character/AueaCharacter.h"
-#include "Player/AueaPlayerState.h"
-#include "Player/AueaPlayerController.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/AueaAbilitySystemComponent.h"
 #include "AbilitySystem/Data/LevelUpInfo.h"
-#include "UI/HUD/AueaHUD.h"
-#include <NiagaraComponent.h>
-#include "Camera/CameraComponent.h"
-#include <AueaGameplayTags.h>
+#include "AbilitySystem/Data/AbilityInfo.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
+#include <AbilitySystem/AueaAttributeSet.h>
+#include <AbilitySystem/AueaAbilitySystemLibrary.h>
+#include <AueaGameplayTags.h>
+#include "Camera/CameraComponent.h"
+#include "Character/AueaCharacter.h"
 #include <Game/AueaGameModeBase.h>
 #include <Game/AueaGameInstance.h>
 #include <Game/LoadScreenSaveGame.h>
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include <Kismet/GameplayStatics.h>
-#include <AbilitySystem/AueaAttributeSet.h>
-#include <AbilitySystem/AueaAbilitySystemLibrary.h>
+#include <NiagaraComponent.h>
+#include "Player/AueaPlayerState.h"
+#include "Player/AueaPlayerController.h"
+#include "UI/HUD/AueaHUD.h"
 
 AAueaCharacter::AAueaCharacter()
 {
@@ -166,6 +167,11 @@ void AAueaCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
 		auto SaveData = AueaGameMode->RetrieveInGameSaveData();
 		if (SaveData == nullptr) return;
 
+		SaveData->bFirstTimeLoading = false;
+
+		/*
+		*	Saving Player Stats
+		*/
 		SaveData->PlayerStartTag = CheckpointTag;
 		if (auto* AueaPlayerState = Cast<AAueaPlayerState>(GetPlayerState()))
 		{
@@ -174,12 +180,40 @@ void AAueaCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
 			SaveData->SpellPoints = AueaPlayerState->GetSpellPoints();
 			SaveData->AttributePoints = AueaPlayerState->GetAttributePoints();
 		}
+
+		/*
+		*	Saving Primary Attributes
+		*/
 		SaveData->Strength = UAueaAttributeSet::GetStrengthAttribute().GetNumericValue(GetAttributeSet());
 		SaveData->Intelligence = UAueaAttributeSet::GetIntelligenceAttribute().GetNumericValue(GetAttributeSet());
 		SaveData->Resilience = UAueaAttributeSet::GetResilinceAttribute().GetNumericValue(GetAttributeSet());
 		SaveData->Vigor = UAueaAttributeSet::GetVigorAttribute().GetNumericValue(GetAttributeSet());
 
-		SaveData->bFirstTimeLoading = false;
+		/*
+		*	Saving Abilities
+		*/
+		if (!HasAuthority()) return;
+		auto* AueaASC = Cast<UAueaAbilitySystemComponent>(AbilitySystemComponent);
+		FForEachAbility SaveAbilityDelegate;
+		SaveData->SavedAbilities.Empty();
+		SaveAbilityDelegate.BindLambda(
+			[this, AueaASC, SaveData](const FGameplayAbilitySpec& AbilitySpec) {
+				const auto AbilityTag = AueaASC->GetAbilityTagFromSpec(AbilitySpec);
+				auto* AbilityInfo = UAueaAbilitySystemLibrary::GetAbilityInfo(this);
+				auto Info = AbilityInfo->FindAbilityInfoForTag(AbilityTag);
+				
+				FSavedAbility SavedAbility;
+				SavedAbility.GameplayAbility = Info.Ability;
+				SavedAbility.AbilityLevel = AbilitySpec.Level;
+				SavedAbility.AbilitySlot = AueaASC->GetSlotFromAbilityTag(AbilityTag);
+				SavedAbility.AbilityStatus = AueaASC->GetStatusFromAbilityTag(AbilityTag);
+				SavedAbility.AbilityTag = AbilityTag;
+				SavedAbility.AbilityType = Info.AbilityType;
+
+				SaveData->SavedAbilities.AddUnique(SavedAbility);
+			}
+		);
+		AueaASC->ForEachAbility(SaveAbilityDelegate);
 
 		AueaGameMode->SaveInGameProgressData(SaveData);
 	}
@@ -242,6 +276,11 @@ void AAueaCharacter::LoadProgress()
 		}
 		else
 		{
+			if (auto* AueaASC = Cast<UAueaAbilitySystemComponent>(AbilitySystemComponent))
+			{
+				AueaASC->AddCharacterAbilitiesFromSaveData(SaveData);
+			}
+
 			if (auto* AueaPlayerState = Cast<AAueaPlayerState>(GetPlayerState()))
 			{
 				AueaPlayerState->SetLevel(SaveData->PlayerLevel);

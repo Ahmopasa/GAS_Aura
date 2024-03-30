@@ -45,6 +45,7 @@ public:
 	FGameplayAbilitySpec* GetSpecFromAbilityTag(const FGameplayTag& AbilityTag);
 	void AbilityActorInfoSet();
 	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities);
+	void AddCharacterAbilitiesFromSaveData(class ULoadScreenSaveGame* SaveData);
 	
 	bool bStartupAbilitiesGiven = false;
 

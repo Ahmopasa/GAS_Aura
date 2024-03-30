@@ -23,5 +23,6 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	void ActivateIfEquipped(UAueaAbilitySystemComponent* AueaASC);
 	void OnPassiveActivate(const FGameplayTag& AbilityTag, bool bActivate);
 };

@@ -5,6 +5,7 @@
 #include <AbilitySystem/AueaAbilitySystemComponent.h>
 #include <AbilitySystemBlueprintLibrary.h>
 #include <Interaction/CombatInterface.h>
+#include "AueaGameplayTags.h"
 
 UPassiveNiagaraComponent::UPassiveNiagaraComponent()
 {
@@ -18,6 +19,8 @@ void UPassiveNiagaraComponent::BeginPlay()
 	if (auto* AueaASC = Cast<UAueaAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner())))
 	{
 		AueaASC->ActivatePassiveEffect.AddUObject(this, &UPassiveNiagaraComponent::OnPassiveActivate);
+		
+		ActivateIfEquipped(AueaASC);
 	}
 	else if (auto* CombatInterface = Cast<ICombatInterface>(GetOwner()))
 	{
@@ -26,9 +29,23 @@ void UPassiveNiagaraComponent::BeginPlay()
 				if (auto* AueaASC = Cast<UAueaAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner())))
 				{
 					AueaASC->ActivatePassiveEffect.AddUObject(this, &UPassiveNiagaraComponent::OnPassiveActivate);
+					
+					ActivateIfEquipped(AueaASC);
 				}
 			}
 		);
+	}
+}
+
+void UPassiveNiagaraComponent::ActivateIfEquipped(UAueaAbilitySystemComponent* AueaASC)
+{
+	const auto bStartupAbilitiesGiven = AueaASC->bStartupAbilitiesGiven;
+	if (bStartupAbilitiesGiven)
+	{
+		if (AueaASC->GetStatusFromAbilityTag(PassiveSpellTag) == FAueaGameplayTags::Get().Abilities_Status_Equipped)
+		{
+			Activate();
+		}
 	}
 }
 
