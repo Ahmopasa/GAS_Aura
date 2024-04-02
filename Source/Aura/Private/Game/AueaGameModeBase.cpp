@@ -68,7 +68,7 @@ void AAueaGameModeBase::SaveInGameProgressData(ULoadScreenSaveGame* SaveObject)
 	UGameplayStatics::SaveGameToSlot(SaveObject, InGameLoadSlotName, InGameLoadSlotIndex);
 }
 
-void AAueaGameModeBase::SaveWorldState(UWorld* World) const
+void AAueaGameModeBase::SaveWorldState(UWorld* World, const FString& DestinationMapAssetName) const
 {
 	auto WorldName = World->GetMapName();
 	WorldName.RemoveFromStart(World->StreamingLevelsPrefix);
@@ -77,6 +77,12 @@ void AAueaGameModeBase::SaveWorldState(UWorld* World) const
 	check(AueaGI);
 	if (auto* SaveGame = GetSaveSlotData(AueaGI->LoadSlotName, AueaGI->LoadSlotIndex))
 	{
+		if (DestinationMapAssetName != FString(""))
+		{
+			SaveGame->MapAssetName = DestinationMapAssetName;
+			SaveGame->MapName = GetMapNameFromMapAssetName(DestinationMapAssetName);
+		}
+
 		if (!SaveGame->HasMap(WorldName))
 		{
 			FSavedMap NewSavedMap;
@@ -167,6 +173,19 @@ void AAueaGameModeBase::TravelToMap(UMVVM_LoadSlot* Slot)
 		Slot, 
 		Maps.FindChecked(Slot->GetMapName())
 	);
+}
+
+FString AAueaGameModeBase::GetMapNameFromMapAssetName(const FString& MapAssetName) const
+{
+	for (auto& Map : Maps)
+	{
+		if (Map.Value.ToSoftObjectPath().GetAssetName() == MapAssetName)
+		{
+			return Map.Key;
+		}
+	}
+
+	return FString();
 }
 
 AActor* AAueaGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
