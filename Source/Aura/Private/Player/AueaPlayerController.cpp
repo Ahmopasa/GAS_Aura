@@ -14,6 +14,7 @@
 #include "Interaction/EnemyInterface.h"
 #include "GameFramework/Character.h"
 #include "UI/Widget/DamageTextComponent.h"
+#include <Interaction/HighlightInterface.h>
 
 
 AAueaPlayerController::AAueaPlayerController()
@@ -136,9 +137,9 @@ void AAueaPlayerController::CursorTrace()
 {
 	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAueaGameplayTags::Get().InputTag_Block_CursorTrace))
 	{
-		if (LastActor) LastActor->UnHighlightActor();
-		if (ThisActor) ThisActor->UnHighlightActor();
-		
+		UnhighlightActor(LastActor);
+		UnhighlightActor(ThisActor);
+
 		ThisActor = LastActor = nullptr;
 		
 		return;
@@ -149,12 +150,36 @@ void AAueaPlayerController::CursorTrace()
 	if (!CursorHit.bBlockingHit) return; 
 
 	LastActor = ThisActor;
-	ThisActor = Cast<IEnemyInterface>(CursorHit.GetActor());
+	if (IsValid(CursorHit.GetActor()) && CursorHit.GetActor()->Implements<UHighlightInterface>())
+	{
+		ThisActor = CursorHit.GetActor();
+	}
+	else
+	{
+		ThisActor = nullptr;
+	}
+	
 
 	if (LastActor != ThisActor)
 	{
-		if (LastActor) LastActor->UnHighlightActor();
-		if (ThisActor) ThisActor->HighlightActor();
+		UnhighlightActor(LastActor);
+		HighlightActor(ThisActor);
+	}
+}
+
+void AAueaPlayerController::HighlightActor(AActor* InActor)
+{
+	if (IsValid(InActor) && InActor->Implements<UHighlightInterface>())
+	{
+		IHighlightInterface::Execute_HighlightActor(InActor);
+	}
+}
+
+void AAueaPlayerController::UnhighlightActor(AActor* InActor)
+{
+	if (IsValid(InActor) && InActor->Implements<UHighlightInterface>())
+	{
+		IHighlightInterface::Execute_UnHighlightActor(InActor);
 	}
 }
 
@@ -165,8 +190,15 @@ void AAueaPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 
 	if (InputTag.MatchesTagExact(FAueaGameplayTags::Get().InputTag_LMB))
 	{
-		bTargeting = ThisActor ? true : false;
-		bAutoRunning = false;
+		if (IsValid(ThisActor))
+		{
+			TargetingStatus = ThisActor->Implements<UEnemyInterface>() ? ETargetingStatus::TargetingEnemy : ETargetingStatus::TargetingNonEnemy;
+			bAutoRunning = false;
+		}
+		else
+		{
+			TargetingStatus = ETargetingStatus::NoTargeting;
+		}
 	}
 
 	if (GetASC()) GetASC()->AbilityInputTagPressed(InputTag);
@@ -184,7 +216,7 @@ void AAueaPlayerController::AbilityInputTagHold(FGameplayTag InputTag)
 		return;
 	}
 
-	if (bTargeting || bShiftKeyDown)
+	if (TargetingStatus == ETargetingStatus::TargetingEnemy || bShiftKeyDown)
 	{
 		if (GetASC()) GetASC()->AbilityInputTagHeld(InputTag);
 	}
@@ -216,11 +248,25 @@ void AAueaPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 	
 	if (GetASC()) GetASC()->AbilityInputTagReleased(InputTag);
 	
-	if (!bTargeting && !bShiftKeyDown)
+	if (TargetingStatus != ETargetingStatus::TargetingEnemy && !bShiftKeyDown)
 	{
 		const APawn* ControlledPawn = GetPawn();
 		if (FollowTime <= ShortPressThreshold && ControlledPawn)
 		{
+			if (IsValid(ThisActor) && ThisActor->Implements<UHighlightInterface>())
+			{
+				IHighlightInterface::Execute_SetMoveToLocation(ThisActor, CachedDestination);
+			}
+			else
+			{
+				if (GetASC() && !GetASC()->HasMatchingGameplayTag(FAueaGameplayTags::Get().InputTag_Block_InputPressed))
+				{
+					UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+						this, ClickNiagaraSystem, CachedDestination
+					);
+				}
+			}
+
 			if (UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(this, ControlledPawn->GetActorLocation(), CachedDestination))
 			{
 				Spline->ClearSplinePoints();
@@ -235,14 +281,11 @@ void AAueaPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 				}
 			}
 
-			if (GetASC() && !GetASC()->HasMatchingGameplayTag(FAueaGameplayTags::Get().InputTag_Block_InputPressed))
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-					this, ClickNiagaraSystem, CachedDestination
-				);
+			
 
 		}
 		FollowTime = 0.f;
-		bTargeting = false;
+		TargetingStatus = ETargetingStatus::NoTargeting;
 	}
 }
 

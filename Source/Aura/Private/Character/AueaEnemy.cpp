@@ -33,6 +33,11 @@ AAueaEnemy::AAueaEnemy()
 	HealthBar->SetupAttachment(GetRootComponent());
 
 	BaseWalkSpeed = 250.f;
+
+	GetMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
+	GetMesh()->MarkRenderStateDirty();
+	Weapon->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
+	Weapon->MarkRenderStateDirty();
 }
 
 void AAueaEnemy::PossessedBy(AController* NewController)
@@ -49,20 +54,22 @@ void AAueaEnemy::PossessedBy(AController* NewController)
 
 }
 
-void AAueaEnemy::HighlightActor()
+void AAueaEnemy::HighlightActor_Implementation()
 {
 	GetMesh()->SetRenderCustomDepth(true);
-	GetMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
-	
-	Weapon->SetRenderCustomDepth(true);
-	Weapon->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
+
 }
 
-void AAueaEnemy::UnHighlightActor()
+void AAueaEnemy::UnHighlightActor_Implementation()
 {
 	GetMesh()->SetRenderCustomDepth(false);
 
 	Weapon->SetRenderCustomDepth(false);
+}
+
+void AAueaEnemy::SetMoveToLocation_Implementation(FVector& OutDestination)
+{
+	// DO NOT CHANGE OutDestination
 }
 
 int32 AAueaEnemy::GetPlayerLevel_Implementation()

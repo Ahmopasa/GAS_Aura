@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Character/AueaCharacterBase.h"
 #include "Interaction/EnemyInterface.h"
+#include "Interaction/HighlightInterface.h"
 #include "UI/WidgetController/OverlayWidgetController.h"
 #include "AueaEnemy.generated.h"
 
@@ -13,7 +14,7 @@ class UBehaviorTree;
 class AAueaAIController;
 
 UCLASS()
-class AURA_API AAueaEnemy : public AAueaCharacterBase, public IEnemyInterface
+class AURA_API AAueaEnemy : public AAueaCharacterBase, public IEnemyInterface, public IHighlightInterface
 {
 	GENERATED_BODY()
 
@@ -22,10 +23,11 @@ public:
 
 	virtual void PossessedBy(AController* NewController) override;
 
-	//~begin Enemy Interface
-	virtual void HighlightActor() override;
-	virtual void UnHighlightActor() override;
-	//~end Enemy Interface
+	//~begin Highlight Interface
+	virtual void HighlightActor_Implementation() override;
+	virtual void UnHighlightActor_Implementation() override;
+	virtual void SetMoveToLocation_Implementation(FVector& OutDestination) override;
+	//~end Highlight Interface
 
 	//~begin Combat Interface
 	virtual int32 GetPlayerLevel_Implementation() override;

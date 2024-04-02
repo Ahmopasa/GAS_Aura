@@ -5,13 +5,15 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerStart.h"
 #include "Interaction/SaveInterface.h"
+#include "Interaction/HighlightInterface.h"
+#include <Aura/Aura.h>
 #include "Checkpoint.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class AURA_API ACheckpoint : public APlayerStart, public ISaveInterface
+class AURA_API ACheckpoint : public APlayerStart, public ISaveInterface, public IHighlightInterface
 {
 	GENERATED_BODY()
 
@@ -19,7 +21,6 @@ public:
 	ACheckpoint(const FObjectInitializer& ObjectInitializer);
 
 	/* Save Interface */
-
 	virtual bool ShouldLoadTransform_Implementation() override;
 	virtual void LoadActor_Implementation() override;
 	/* Save Interface */
@@ -35,10 +36,23 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void CheckPointReached(UMaterialInstanceDynamic* DynamicMaterialInstance);
 
-	void HandleGlowEffects();
-private:
+	/* Highlight Interface */
+	virtual void SetMoveToLocation_Implementation(FVector& OutDestination) override;
+	virtual void HighlightActor_Implementation() override;
+	virtual void UnHighlightActor_Implementation() override;
+	/* Highlight Interface */
+
 	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> MoveToComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	int32 CustomDepthStencilOverride = CUSTOM_DEPTH_TAN;
+
+	void HandleGlowEffects();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> CheckpointMesh;
+private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class USphereComponent> Sphere;
