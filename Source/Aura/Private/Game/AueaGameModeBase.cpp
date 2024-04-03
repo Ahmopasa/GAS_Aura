@@ -6,10 +6,12 @@
 #include <Kismet/GameplayStatics.h>
 #include "UI/ViewModel/MVVM_LoadSlot.h"
 #include "GameFramework/PlayerStart.h"
+#include "GameFramework/Character.h"
 #include <Game/AueaGameInstance.h>
 #include "EngineUtils.h"
 #include <Interaction/SaveInterface.h>
 #include <Serialization/ObjectAndNameAsStringProxyArchive.h>
+
 
 void AAueaGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
 {
@@ -24,6 +26,7 @@ void AAueaGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
 	LoadScreenSaveGame->MapName = LoadSlot->GetMapName();	
 	LoadScreenSaveGame->SaveSlotStatus = Taken;
 	LoadScreenSaveGame->PlayerStartTag = LoadSlot->PlayerStartTag;
+	LoadScreenSaveGame->MapAssetName = LoadSlot->MapAssetName;
 	UGameplayStatics::SaveGameToSlot(LoadScreenSaveGame, LoadSlot->LoadSlotName, SlotIndex);
 }
 
@@ -207,6 +210,15 @@ AActor* AAueaGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
 	}
 
 	return nullptr;
+}
+
+void AAueaGameModeBase::PlayerDied(ACharacter* DeadCharacter)
+{
+	auto* SaveGame = RetrieveInGameSaveData();
+	if (!IsValid(SaveGame)) return;
+
+	UGameplayStatics::OpenLevel(DeadCharacter, FName(SaveGame->MapAssetName));
+
 }
 
 void AAueaGameModeBase::BeginPlay()

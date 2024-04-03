@@ -76,6 +76,8 @@ public:
 	UFUNCTION()
 	virtual void OnRep_Burned();
 
+	FORCEINLINE void SetCharacterClass(ECharacterClass InClass) { CharacterClass = InClass; }
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
@@ -95,6 +97,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	FName TailSocketName;
 
+	UPROPERTY(BlueprintReadOnly)
 	bool bDead = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")

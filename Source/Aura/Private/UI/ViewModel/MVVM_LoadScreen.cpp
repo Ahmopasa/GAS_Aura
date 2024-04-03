@@ -41,6 +41,7 @@ void UMVVM_LoadScreen::NewSlotButtonPressed(int32 Slot, const FString& EnteredNa
 	LoadSlots[Slot]->SetMapName(AueaGameMode->DefaultMapName);
 	LoadSlots[Slot]->SlotStatus = Taken;
 	LoadSlots[Slot]->PlayerStartTag = AueaGameMode->DefaultPlayerStartTag;
+	LoadSlots[Slot]->MapAssetName = AueaGameMode->DefaultMap.ToSoftObjectPath().GetAssetName();
 
 	AueaGameMode->SaveSlotData(LoadSlots[Slot], Slot);
 

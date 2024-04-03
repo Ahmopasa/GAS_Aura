@@ -231,6 +231,24 @@ int32 AAueaCharacter::GetPlayerLevel_Implementation()
 	return AueaPlayerState->GetPlayerLevel();
 }
 
+void AAueaCharacter::Die(const FVector& DeathImpulse)
+{
+	Super::Die(DeathImpulse);
+
+	FTimerDelegate DeathTimerDelegate;
+	DeathTimerDelegate.BindLambda([this]() {
+		auto* AueaGM = Cast<AAueaGameModeBase>(UGameplayStatics::GetGameMode(this));
+		if (AueaGM)
+		{
+			AueaGM->PlayerDied(this);
+		}
+	});
+
+	GetWorldTimerManager().SetTimer(DeathTimer, DeathTimerDelegate, DeathTime, false);
+
+	TopDownCameraComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+}
+
 void AAueaCharacter::OnRep_Stunned()
 {
 	if (auto* AueaASC = Cast<UAueaAbilitySystemComponent>(AbilitySystemComponent))
