@@ -83,6 +83,8 @@ void AAueaEnemy::Die(const FVector& DeathImpulse)
 
 	if (AueaAIController) AueaAIController->GetBlackboardComponent()->SetValueAsBool(FName("Dead"), true);
 
+	SpawnLoot();
+
 	Super::Die(DeathImpulse);
 }
 

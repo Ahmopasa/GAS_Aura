@@ -13,6 +13,7 @@ class UAbilitySystemComponent;
 class UAttributeMenuWidgetController;
 class UOverlayWidgetController;
 struct FWidgetControllerParams; 
+class ULootTiers;
 
 UCLASS()
 class AURA_API UAueaAbilitySystemLibrary : public UBlueprintFunctionLibrary
@@ -53,6 +54,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AueaAbilitySystemLibrary|CharacterClassDefaults")
 	static UAbilityInfo* GetAbilityInfo(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintCallable, Category = "AueaAbilitySystemLibrary|CharacterClassDefaults", meta = (DefaultToSelf = "WorldContextObject"))
+	static ULootTiers* GetLootTiers(const UObject* WorldContextObject);
 
 	/*
 	*	Effect Context | Getters

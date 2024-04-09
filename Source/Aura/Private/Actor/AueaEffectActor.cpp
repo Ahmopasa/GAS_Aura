@@ -2,6 +2,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include <Kismet/KismetMathLibrary.h>
 
 AAueaEffectActor::AAueaEffectActor()
 {
@@ -10,11 +11,41 @@ AAueaEffectActor::AAueaEffectActor()
 	SetRootComponent(CreateDefaultSubobject<USceneComponent>("SceneRoot"));
 }
 
+void AAueaEffectActor::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 
+	RunningTime += DeltaTime;
+
+	if (const auto SinePeriod = 2 * PI / SinePeriodConstant; RunningTime > SinePeriod)
+	{
+		RunningTime = 0.f;
+	}
+
+	ItemMovement(DeltaTime);
+}
 
 void AAueaEffectActor::BeginPlay()
 {
 	Super::BeginPlay();
+
+	CalculatedLocation = InitialLocation = GetActorLocation();
+
+	CalculatedRotation = GetActorRotation();
+}
+
+void AAueaEffectActor::StartRotation()
+{
+	bRotates = true;
+	
+	CalculatedRotation = GetActorRotation();
+}
+
+void AAueaEffectActor::StartSinusoidalMovement()
+{
+	bSinusoidalMovement = true;
+
+	CalculatedLocation = InitialLocation = GetActorLocation();
 }
 
 void AAueaEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass)
@@ -98,6 +129,21 @@ void AAueaEffectActor::OnEndOverlap(AActor* TargetActor)
 			ActiveEffectHandles.FindAndRemoveChecked(Handle);
 
 		}
+	}
+}
+
+void AAueaEffectActor::ItemMovement(float DeltaTime)
+{
+	if (bRotates)
+	{
+		const auto DeltaRotation = FRotator(0.f, DeltaTime * RotationRate, 0.f);
+		CalculatedRotation = UKismetMathLibrary::ComposeRotators(CalculatedRotation, DeltaRotation);
+	}
+
+	if (bSinusoidalMovement)
+	{
+		const auto Sine = SineAmplitude * FMath::Sin(SinePeriodConstant * RunningTime);
+		CalculatedLocation = InitialLocation + FVector(0.f, 0.f, Sine);
 	}
 }
 

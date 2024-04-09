@@ -33,8 +33,40 @@ class AURA_API AAueaEffectActor : public AActor
 public:	
 	AAueaEffectActor();
 
+	virtual void Tick(float DeltaTime) override;
+
 protected:
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Movements")
+	bool bRotates = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Movements")
+	float RotationRate = 45.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Movements")
+	bool bSinusoidalMovement = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Movements")
+	float SineAmplitude = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Movements")
+	float SinePeriodConstant = 1.f;
+
+	UPROPERTY(BlueprintReadWrite)
+	FRotator CalculatedRotation;
+
+	UFUNCTION(BlueprintCallable)
+	void StartRotation();
+
+	UPROPERTY(BlueprintReadWrite)
+	FVector CalculatedLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Movements")
+	FVector InitialLocation;
+
+	UFUNCTION(BlueprintCallable)
+	void StartSinusoidalMovement();
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass);
@@ -69,6 +101,11 @@ protected:
 
 	TMap<FActiveGameplayEffectHandle, UAbilitySystemComponent*> ActiveEffectHandles; 
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Applied Effects")
 	float ActorLevel = 1.f;
+
+private:
+	float RunningTime = 0.f;
+
+	void ItemMovement(float DeltaTime);
 };

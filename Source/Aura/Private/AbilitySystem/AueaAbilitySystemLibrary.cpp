@@ -1,4 +1,5 @@
 #include "AbilitySystem/AueaAbilitySystemLibrary.h"
+#include "AbilitySystem/Data/LootTiers.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "AueaAbilityTypes.h"
@@ -151,6 +152,14 @@ UAbilityInfo* UAueaAbilitySystemLibrary::GetAbilityInfo(const UObject* WorldCont
 	if (AueaGameMode == nullptr) return nullptr;
 
 	return AueaGameMode->AbilityInfo;
+}
+
+ULootTiers* UAueaAbilitySystemLibrary::GetLootTiers(const UObject* WorldContextObject)
+{
+	const AAueaGameModeBase* AueaGameMode = Cast<AAueaGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
+	if (AueaGameMode == nullptr) return nullptr;
+
+	return AueaGameMode->LootTiers;
 }
 
 bool UAueaAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle)

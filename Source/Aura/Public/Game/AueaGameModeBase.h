@@ -8,6 +8,7 @@
 
 class UCharacterClassInfo;
 class UAbilityInfo;
+class ULootTiers;
 
 UCLASS()
 class AURA_API AAueaGameModeBase : public AGameModeBase
@@ -19,6 +20,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Ability Info")
 	TObjectPtr<UAbilityInfo> AbilityInfo;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Loot Tiers")
+	TObjectPtr<ULootTiers> LootTiers;
 
 	void SaveSlotData(class UMVVM_LoadSlot* LoadSlot, int32 SlotIndex);
 	class ULoadScreenSaveGame* GetSaveSlotData(const FString& SlotName, int32 SlotIndex) const;
