@@ -15,9 +15,9 @@
 
 void AAueaGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
 {
-	if (UGameplayStatics::DoesSaveGameExist(LoadSlot->LoadSlotName, SlotIndex))
+	if (UGameplayStatics::DoesSaveGameExist(LoadSlot->GetLoadSlotName(), SlotIndex))
 	{
-		UGameplayStatics::DeleteGameInSlot(LoadSlot->LoadSlotName, SlotIndex);
+		UGameplayStatics::DeleteGameInSlot(LoadSlot->GetLoadSlotName(), SlotIndex);
 	}
 
 	auto* SaveGameObject = UGameplayStatics::CreateSaveGameObject(LoadScreenSavedGameClass);
@@ -27,7 +27,7 @@ void AAueaGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
 	LoadScreenSaveGame->SaveSlotStatus = Taken;
 	LoadScreenSaveGame->PlayerStartTag = LoadSlot->PlayerStartTag;
 	LoadScreenSaveGame->MapAssetName = LoadSlot->MapAssetName;
-	UGameplayStatics::SaveGameToSlot(LoadScreenSaveGame, LoadSlot->LoadSlotName, SlotIndex);
+	UGameplayStatics::SaveGameToSlot(LoadScreenSaveGame, LoadSlot->GetLoadSlotName(), SlotIndex);
 }
 
 ULoadScreenSaveGame* AAueaGameModeBase::GetSaveSlotData(const FString& SlotName, int32 SlotIndex) const
@@ -172,10 +172,15 @@ void AAueaGameModeBase::LoadWorldState(UWorld* World) const
 
 void AAueaGameModeBase::TravelToMap(UMVVM_LoadSlot* Slot)
 {
-	UGameplayStatics::OpenLevelBySoftObjectPtr(
-		Slot, 
-		Maps.FindChecked(Slot->GetMapName())
-	);
+	//UGameplayStatics::OpenLevelBySoftObjectPtr(
+	//	Slot, 
+	//	Maps.FindChecked(Slot->GetMapName())
+	//);
+
+	const FString SlotName = Slot->GetLoadSlotName();
+	const int32 SlotIndex = Slot->SlotIndex;
+
+	UGameplayStatics::OpenLevelBySoftObjectPtr(Slot, Maps.FindChecked(Slot->GetMapName()));
 }
 
 FString AAueaGameModeBase::GetMapNameFromMapAssetName(const FString& MapAssetName) const

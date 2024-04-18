@@ -10,9 +10,9 @@ void UMVVM_LoadScreen::InitializeLoadSlots()
 	LoadSlot_1 = NewObject<UMVVM_LoadSlot>(this, LoadSlotViewModelClass);
 	LoadSlot_2 = NewObject<UMVVM_LoadSlot>(this, LoadSlotViewModelClass);
 
-	LoadSlot_0->LoadSlotName = FString("LoadSlot_0");
-	LoadSlot_1->LoadSlotName = FString("LoadSlot_1");
-	LoadSlot_2->LoadSlotName = FString("LoadSlot_2");
+	LoadSlot_0->SetLoadSlotName(FString("LoadSlot_0"));
+	LoadSlot_1->SetLoadSlotName(FString("LoadSlot_1"));
+	LoadSlot_2->SetLoadSlotName(FString("LoadSlot_2"));
 
 	LoadSlot_0->SlotIndex = 0;
 	LoadSlot_1->SlotIndex = 1;
@@ -48,7 +48,7 @@ void UMVVM_LoadScreen::NewSlotButtonPressed(int32 Slot, const FString& EnteredNa
 	LoadSlots[Slot]->InitializeSlot();
 
 	auto* AueaGameInstance = Cast<UAueaGameInstance>(AueaGameMode->GetGameInstance());
-	AueaGameInstance->LoadSlotName = LoadSlots[Slot]->LoadSlotName;
+	AueaGameInstance->LoadSlotName = LoadSlots[Slot]->GetLoadSlotName();
 	AueaGameInstance->LoadSlotIndex = LoadSlots[Slot]->SlotIndex;
 	AueaGameInstance->PlayerStartTag = AueaGameMode->DefaultPlayerStartTag;
 }
@@ -77,7 +77,7 @@ void UMVVM_LoadScreen::YesButtonPressed()
 {
 	if (IsValid(SelectedSlot))
 	{
-		AAueaGameModeBase::DeleteSlot(SelectedSlot->LoadSlotName, SelectedSlot->SlotIndex);
+		AAueaGameModeBase::DeleteSlot(SelectedSlot->GetLoadSlotName(), SelectedSlot->SlotIndex);
 		SelectedSlot->SlotStatus = Vacant;
 		SelectedSlot->InitializeSlot();
 		SelectedSlot->EnableSelectSlotButton.Broadcast(true);
@@ -89,7 +89,7 @@ void UMVVM_LoadScreen::PlayButtonPressed()
 	auto* AueaGameMode = Cast<AAueaGameModeBase>(UGameplayStatics::GetGameMode(this));
 	auto* AueaGameInstance = Cast<UAueaGameInstance>(AueaGameMode->GetGameInstance());
 	AueaGameInstance->PlayerStartTag = SelectedSlot->PlayerStartTag;
-	AueaGameInstance->LoadSlotName = SelectedSlot->LoadSlotName;
+	AueaGameInstance->LoadSlotName = SelectedSlot->GetLoadSlotName();
 	AueaGameInstance->LoadSlotIndex = SelectedSlot->SlotIndex;
 	if (IsValid(SelectedSlot))
 	{
@@ -103,15 +103,19 @@ void UMVVM_LoadScreen::LoadData()
 
 	if (!IsValid(AueaGameMode)) return;
 
-	for (const auto& LoadSlot : LoadSlots)
+	for (const TTuple<int32, UMVVM_LoadSlot*> LoadSlot : LoadSlots)
 	{
-		auto* SaveObject = AueaGameMode->GetSaveSlotData(LoadSlot.Value->LoadSlotName, LoadSlot.Key);
-	
-		LoadSlot.Value->SetPlayerName(SaveObject->PlayerName);
-		LoadSlot.Value->SetPlayerLevel(SaveObject->PlayerLevel);
-		LoadSlot.Value->SetMapName(SaveObject->MapName);
-		LoadSlot.Value->SlotStatus = SaveObject->SaveSlotStatus;
-		LoadSlot.Value->PlayerStartTag = SaveObject->PlayerStartTag;
+		ULoadScreenSaveGame* SaveObject = AueaGameMode->GetSaveSlotData(LoadSlot.Value->GetLoadSlotName(), LoadSlot.Key);
+
+		const FString PlayerName = SaveObject->PlayerName;
+		TEnumAsByte<ESaveSlotStatus> SaveSlotStatus = SaveObject->SaveSlotStatus;
+
+		LoadSlot.Value->SlotStatus = SaveSlotStatus;
+		LoadSlot.Value->SetPlayerName(PlayerName);
 		LoadSlot.Value->InitializeSlot();
+
+		LoadSlot.Value->SetMapName(SaveObject->MapName);
+		LoadSlot.Value->PlayerStartTag = SaveObject->PlayerStartTag;
+		LoadSlot.Value->SetPlayerLevel(SaveObject->PlayerLevel);
 	}
 }

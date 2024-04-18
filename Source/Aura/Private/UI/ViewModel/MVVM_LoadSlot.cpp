@@ -34,3 +34,13 @@ FString UMVVM_LoadSlot::GetMapName() const
 {
 	return MapName;
 }
+
+void UMVVM_LoadSlot::SetLoadSlotName(FString InLoadSlotName)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(LoadSlotName, InLoadSlotName);
+}
+
+FString UMVVM_LoadSlot::GetLoadSlotName() const
+{
+	return LoadSlotName;
+}
